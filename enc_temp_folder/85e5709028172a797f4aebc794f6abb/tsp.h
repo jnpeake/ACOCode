@@ -244,23 +244,17 @@ public:
 		}
 		fclose(fp);
 		printf("\n Pre numVerts %d", numVerts);
-		//number of vertices is updated in case duplicates were found in the previous step
 		numVerts = iVert;
 		printf("\n Post numVerts %d", numVerts);
 		
 
 		// construct the edges
-		// pointer-to-float matrix of numverts * 4
 		edgeDist = (float**)malloc( numVerts * sizeof( float* ) );
-
-		//each value in edgeDist array is numverts * 4
 		for ( i = 0; i < numVerts; i++ )
 			edgeDist[i] = (float*)malloc( numVerts * sizeof( float ) );
 
 		for ( i = 0; i < numVerts; i++ )
 		{
-
-			//distance between each city is calculated and added to edge matrix
 			for ( j = 0; j < numVerts; j++ )
 			{
 				if (i == j)

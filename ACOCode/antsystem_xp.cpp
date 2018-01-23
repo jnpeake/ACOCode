@@ -26,11 +26,15 @@ void AntSystem::Init( int nAnts, TSP *tsp, int seed )
 	int i;
 
 	// intiailise pheromone matrix 
+	//ALLOC varies depending on whether EMULATE is defined or not - if yes it's the same as malloc, if not it's _mm_malloc
+	printf("\n Size of float*: %d", sizeof(float*));
 
+	//m_pher, m_weights, m_iDistSq and m_fNN are all pointer-to-pointer-to-float matrices of numVerts * 8
 	m_pher = (float**)ALLOC( (m_pTSP->numVerts * sizeof( float* )) );
 	m_weights = (float**)ALLOC( (m_pTSP->numVerts * sizeof( float* )) );
 	m_iDistSq = (float**)ALLOC( (m_pTSP->numVerts * sizeof( float* )) );
 	m_fNN = (float **)ALLOC( (m_pTSP->numVerts * sizeof( float* )) );
+
 	// for Xeon Phi, each row of the array needs to be padded to a whole number * 16 float and 64-byte aligned.
 	int nRowAlloc = m_pTSP->numVerts;
 
@@ -40,6 +44,8 @@ void AntSystem::Init( int nAnts, TSP *tsp, int seed )
 
 	for ( i = 0; i < m_pTSP->numVerts; i++ )
 	{
+		//each entry in the matrix is an array of nRowAlloc * 8
+
 	    m_pher[i] = (float*)ALLOC( (nRowAlloc * sizeof( float )) ); 
 	    m_weights[i] = (float*)ALLOC(( nRowAlloc * sizeof( float ) )); 
 	    m_iDistSq[i] = (float*)ALLOC(( nRowAlloc * sizeof( float ) )); 
@@ -50,12 +56,18 @@ void AntSystem::Init( int nAnts, TSP *tsp, int seed )
 		memset( m_iDistSq[i], 0, nRowAlloc * sizeof( float ) );
 		memset( m_fNN[i], 0, nRowAlloc * sizeof( float ) );
 	}
+
 	// create ants
+	//m_pAnts is an array of ants, m_nAnts * 144
+	printf("\n Size of ant: %d", sizeof(Ant));
+
 	m_pAnts = (Ant*)ALLOC( (m_nAnts * sizeof( Ant )) );
 	// create a ranlux generator to generate seeds for the
 	// ants (which use a numerical recipes quick and dirty generator).
 	RanluxGenerator rlgen;
 	rlgen.init( seed );
+
+	//the ants are initialised in this loop
 	for ( i = 0; i < m_nAnts; i++ )
 	{
 		int seeds[16];
@@ -399,7 +411,7 @@ void AntSystem::Solve( int maxIterations, int maxStagnantIterations, bool contin
 		Iterate();
 #ifdef EMULATE
 		if ( i%20 == 0 )
-		  printf("Iteration: %d, Shortest Distance: %f, Shortest Tour: %d, Timers: %f %f \n",i,m_shortestDist,m_shortestTour,timers->GetTimer(0), timers->GetTimer(1));
+		  printf("Iteration: %d, Shortest Distance: %f, Timers: %f %f \n",i,m_shortestDist,timers->GetTimer(0), timers->GetTimer(1));
 #endif
 		if ( m_shortestDist < shortestSoFar )
 		{

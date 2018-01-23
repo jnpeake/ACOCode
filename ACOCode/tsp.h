@@ -42,20 +42,29 @@ public:
 
 	void FillNNList( int iList )
 	{
+		//*tempList is a distSort array of size numverts-1 * 8
+		//distSort is a struct declared earlier, with two parameters:
+		//float dist;
+		//int index;
+		printf("\n Size of distSort %d ", sizeof(distSort));
 		distSort *tempList = (distSort*)malloc( (numVerts-1) * sizeof( distSort ) );
 		int count = 0;
 		for ( int i = 0; i < numVerts; i++ )
 		{
+			//checks if i matches the iList parameter, which itself is the iterating value of another for loop
+			//if false, adds a distSort struct to the array with the index i and a dist value of the value at i, iList of the edgeDist
 			if ( i != iList )
 			{
 				tempList[count].index = i;
 				tempList[count].dist = edgeDist[i][iList];
+				//printf("\n Temp List %d data: Index: %d Dist: %f", count, i, edgeDist[i][iList]);
 				count++;
 			}
 		}
 		qsort( tempList, numVerts-1, sizeof(distSort), nnComp );
 		for ( int i = 0; i < numNN; i++ )
 		{
+			//printf("\n Adding value %d to nnList at position %d,%d", tempList[i].index, iList, i);
 			nnList[iList][i] = tempList[i].index;
 		}
 		free( tempList );
@@ -222,19 +231,21 @@ public:
 			int found = 0;
 			for ( int j = 0; j < iVert; j++ )
 			{
-				printf("\n J:%d  X:%F  Y:%F", j, x, y);
+				//printf("\n J:%d  X:%F  Y:%F", j, x, y);
 
 				//performs distance function - this varies depending on edge_weight_type
 
-				printf("\n X:%f  Y:%f  vertX:%f  vertY:%f", x, y, vertX[i], vertY[j]);
+				//printf("\n X:%f  Y:%f  vertX:%f  vertY:%f", x, y, vertX[i], vertY[j]);
 				int dist = distanceFunc( x, y, vertX[i], vertY[j] );
 				if ( dist == 0 )
 				{
-					printf("\n FOUND X:%f  Y:%f  vertX:%f  vertY:%f", x, y, vertX[i], vertY[j]);
+					//printf("\n FOUND X:%f  Y:%f  vertX:%f  vertY:%f", x, y, vertX[i], vertY[j]);
 					found = 1;
 					break;
 				}
 			}
+
+			//adds vertices to vertX and vertY if they don't already exist in vertX and vertY
 			if ( !found )
 			{
 				vertX[iVert] =  x;
@@ -243,20 +254,21 @@ public:
 			}
 		}
 		fclose(fp);
-		printf("\n Pre numVerts %d", numVerts);
+		//printf("\n Pre numVerts %d", numVerts);
 		//number of vertices is updated in case duplicates were found in the previous step
 		numVerts = iVert;
-		printf("\n Post numVerts %d", numVerts);
+		//printf("\n Post numVerts %d", numVerts);
 		
 
 		// construct the edges
-		// pointer-to-float matrix of numverts * 4
+		// pointer-to-pointer-to-float matrix of numverts * 4
 		edgeDist = (float**)malloc( numVerts * sizeof( float* ) );
 
-		//each value in edgeDist array is numverts * 4
+		//each value in edgeDist array is a pointer to a float which is numverts * 4
 		for ( i = 0; i < numVerts; i++ )
 			edgeDist[i] = (float*)malloc( numVerts * sizeof( float ) );
 
+		//this creates a matrix of numVerts*numVerts
 		for ( i = 0; i < numVerts; i++ )
 		{
 
@@ -273,12 +285,16 @@ public:
 		free( vertX );
 		free( vertY );
 		// initialize the nearest neighbour lists
+		//numNN is set to the number of nearest neighbours passed into the program as a parameter
 		numNN = nNearNeighbours;
 
+		//nnList is a pointer-to-pointer-to-int array of numVerts * 4
 		nnList = (int **)malloc( numVerts * sizeof(int*) );
 
 		for ( i = 0; i < numVerts; i++ )
 		{
+			//each entry in nnList is a pointer-to-int array of numNN * 4
+			//nnList is filled with 20 nearest neighbours of each city
 			nnList[i] = (int*)malloc( numNN * sizeof( int ) );
 			FillNNList( i );
 		}

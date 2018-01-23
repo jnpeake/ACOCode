@@ -402,7 +402,54 @@ void Ant::ConstructTour( void )
 #endif
 int Ant::iRoulette( float *weights, int *tabu, int nWeights )
 {
-	return 0;
+	int i, j;
+
+	float runningIndex[16];
+	float nextWeights[16];
+	float nextIndices[16];
+	float curIndices[16];
+	float curWeights[16];
+	float randoms[16];
+
+	int tabuMask = tabu[0];
+
+	for (i = 0; i < 16; i++)
+	{
+		curIndices[i] = curWeights[i] = 0.0f;
+		runningIndex[i] = (float)i;
+	}
+
+	for (int i = 0; i < nWeights / 16; i++)
+	{
+		memcpy(nextWeights, weights + i * 16, 16 * sizeof(float));
+		memcpy(nextIndices, runningIndex, 16 * sizeof(float));
+		avxRandom(randoms);
+		for (j = 0; j < 16; j++)
+		{
+			if (tabuMask&(1 << j))
+				nextWeights[j] = 0.0f;
+			float roulette = nextWeights[j] * randoms[j];
+			bool gtMask = roulette > curWeights[j];
+			if (gtMask)
+			{
+				curWeights[j] = roulette;
+				curIndices[j] = runningIndex[j];
+			}
+			runningIndex[j] += 16.0f;
+		}
+		tabuMask = tabu[i + 1];
+	}
+	float biggestVal = 0.0f;
+	int indexOfBiggest = 0;
+	for (int i = 0; i < 16; i++)
+	{
+		if (curWeights[i] > biggestVal)
+		{
+			biggestVal = curWeights[i];
+			indexOfBiggest = curIndices[i];
+		}
+	}
+	return indexOfBiggest;
 }
 
 int Ant::vRoulette( float *weights, int *tabu, int nWeights )

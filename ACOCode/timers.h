@@ -2,34 +2,10 @@
 #define _TIMERS_INC_
 
 #ifdef _WIN32
-// don't need this on windows for now - it just needs to build
-class Timers 
-{
-	double microsecs( void )
-	{
-		return 0.0;
-	}
-public:
-	Timers( int nTimers )
-	{
-	}
-	void Clear( void )
-	{
-	}
-	void StartTimer( int timer )
-	{
-	}
-	void StopTimer( int timer )
-	{
-	}
-	double GetTimer( int timer )
-	{
-		return 0.0;
-	}
-};
-
+#include <windows.h>
 #else
 #include <sys/time.h>
+#endif
 
 class Timers
 {
@@ -37,11 +13,20 @@ class Timers
 	int numTimers;
 	double *timers;
 
+#ifdef _WIN32
+	double invTimerFreqMicrosec;
+#endif
 	double microsecs( void )
 	{
+#ifdef _WIN32
+		LARGE_INTEGER timeValue;
+		QueryPerformanceCounter(&timeValue);
+		return timeValue.QuadPart * invTimerFreqMicrosec;
+#else
 		timeval t;
 		gettimeofday( &t, 0 );
 		return (double)(t.tv_sec*1e6 + t.tv_usec);
+#endif
 	}
 
 public:
@@ -49,6 +34,12 @@ public:
 	{
 		numTimers = nTimers;
 		timers = new double[numTimers];
+#ifdef _WIN32
+		LARGE_INTEGER freq;
+		QueryPerformanceFrequency(&freq);
+		invTimerFreqMicrosec = 1.0e6 / (double)freq.QuadPart;
+#endif
+
 	}
 	void Clear( void )
 	{
@@ -69,5 +60,4 @@ public:
 		return timers[timer] * 1e-6;
 	}
 };
-#endif
 #endif

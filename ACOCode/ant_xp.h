@@ -6,7 +6,7 @@
 #include <immintrin.h>
 #endif
 
-#define USE_VROULETTE
+//#define USE_VROULETTE
 
 class AntSystem; // forward declaration
 

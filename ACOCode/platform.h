@@ -2,7 +2,7 @@
 #define _PLATFORM_INC_
 
 #define EMULATE
-#define USE_VROULETTE
+//#define USE_VROULETTE
 
 #ifndef EMULATE
 #define ALLOC( _x ) _mm_malloc( (_x), 64 )

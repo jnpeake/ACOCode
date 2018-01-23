@@ -17,15 +17,20 @@ int main( int argc, char *argv[] )
   int nNeighbours;
   sscanf( argv[3], "%d", &nNeighbours );
 
+
+  //creates edge matrix and NN list
   tsp->Init( argv[1], nNeighbours );
   
   int nIter;
+  //determines the number of iterations
   sscanf( argv[2],"%d", &nIter );
 
   Timers *timers = new Timers(10);
 
   AntSystem *as = new AntSystem();
   int seed = 12345;
+
+  //determines seed, if specified
   if ( argc == 5 )
 	  sscanf( argv[4], "%d", &seed );
 

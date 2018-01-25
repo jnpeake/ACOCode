@@ -59,8 +59,6 @@ void AntSystem::Init( int nAnts, TSP *tsp, int seed )
 
 	// create ants
 	//m_pAnts is an array of ants, m_nAnts * 144
-	printf("\n Size of ant: %d", sizeof(Ant));
-
 	m_pAnts = (Ant*)ALLOC( (m_nAnts * sizeof( Ant )) );
 	// create a ranlux generator to generate seeds for the
 	// ants (which use a numerical recipes quick and dirty generator).
@@ -86,14 +84,21 @@ void AntSystem::Init( int nAnts, TSP *tsp, int seed )
 
 void AntSystem::Clear( void )
 {
+	//timers are reset
 	timers->Clear();
+	
+	//shortest dist is initially set as a very large number
 	m_shortestDist = 1e20f;
+
+	printf("\n Shortest Distance: %d", m_shortestDist);
 
 	float aDist = 0.0f;
 	int i, j;
 	float val;
 
 	int *tour = (int*)malloc(m_pTSP->numVerts * sizeof(int));
+
+	//sets each step of the tour to i
 	for ( i = 0; i < m_pTSP->numVerts; i++ )
 	{
 		tour[i] = i;
@@ -105,6 +110,7 @@ void AntSystem::Clear( void )
 		int nearI;
 		for ( j = i+1; j < m_pTSP->numVerts; j++ )
 		{
+			//if the distance between edge i and edge j is less than near D, nearD is set to the distance and nearI becomes j
 			if ( m_pTSP->edgeDist[tour[i]][tour[j]] < nearD )
 			{
 				nearD = m_pTSP->edgeDist[tour[i]][tour[j]];
@@ -113,18 +119,23 @@ void AntSystem::Clear( void )
 		}
 		// add distance and swap new index into tour
 		aDist += nearD;
+
 	    int swap = tour[i+1];
 		tour[i+1] = tour[nearI];
 		tour[nearI] = swap;
 	}
 
+	//the distance between the last two vertices is added to aDist, as well as the distance between the last and first vertex
 	aDist += m_pTSP->edgeDist[tour[m_pTSP->numVerts-2]][tour[m_pTSP->numVerts-1]];
 	aDist += m_pTSP->edgeDist[tour[0]][tour[m_pTSP->numVerts-1]];
+
 	float sanityCheck = 0.0f;
 	for ( i = 0; i < m_pTSP->numVerts; i++ )
 	{
 		int i0 = tour[i];
+
 		int i1 = tour[(i+1)%m_pTSP->numVerts];
+		printf("\n SANITY CHECK i1: %d", i1);
 		sanityCheck += m_pTSP->edgeDist[i0][i1];
 	}
 	//memcpy( m_shortestTour, tour, m_pTSP->numVerts * sizeof( int ) );

@@ -378,7 +378,7 @@ void Ant::ConstructTour( void )
 	avxRandom( r );
 
 	int iLast = tsp->numVerts * r[0]; 
-	printf("\n iLast: %d", iLast);
+	//printf("\n iLast: %d", iLast);
 
 	//if iLast matches numVerts, iLast is 0 (the first city). Otherwise, iLast is the first entry in the tour array.
 	if ( iLast == tsp->numVerts )
@@ -392,9 +392,9 @@ void Ant::ConstructTour( void )
 
 	//shifts the bit of 1 by jTabu - so if jTabu is 10, tabu[iTabu] will be 1024 as 00000000001 (1) becomes 10000000000 (1024) as the bit has been shifted 10 places
 	tabu[iTabu] |= (1<<jTabu);
-	printf("\n iTabu: %d, jTabu: %d, tabu[iTabu]: %d", iTabu, jTabu, tabu[iTabu]);
+	//printf("\n iTabu: %d, jTabu: %d, tabu[iTabu]: %d", iTabu, jTabu, tabu[iTabu]);
 
-	//this for loop constructs the tour
+	//this for loop constructs the tour. passes edge weights, tabu list and nVert 16
 	for ( i = 1; i < tsp->numVerts; i++ )
 	{
 #ifdef USE_VROULETTE

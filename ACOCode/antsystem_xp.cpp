@@ -41,7 +41,7 @@ void AntSystem::Init( int nAnts, TSP *tsp, int seed )
 	if ( nRowAlloc%16 )
 		nRowAlloc = 16 * (nRowAlloc/16 + 1 );
 
-
+	printf("\n nRowAlloc: %d", nRowAlloc);
 	for ( i = 0; i < m_pTSP->numVerts; i++ )
 	{
 		//each entry in the matrix is an array of nRowAlloc * 8
@@ -104,6 +104,7 @@ void AntSystem::Clear( void )
 		tour[i] = i;
 	}
 
+	//calculates the nnTour distance
 	for ( i = 0; i < m_pTSP->numVerts-1; i++ )
 	{
 		float nearD = 1e20f;
@@ -140,41 +141,68 @@ void AntSystem::Clear( void )
 	}
 	//memcpy( m_shortestTour, tour, m_pTSP->numVerts * sizeof( int ) );
 	//m_shortestDist = aDist;
+
+	//tour is de-allocated
 	free(tour);
 
+	//initial pheremone level is determined by nnTour
+
 	val = 1.0f/((float)aDist*rho);
-	printf("nnTour %e intital pher %e\n",aDist,val);
+	printf("\n nnTour: %f Initial pheromone: %f\n",aDist,val);
+
+
+	//from 0 to numVerts
 	for ( i = 0; i < m_pTSP->numVerts; i++ )
 	{
+		//if the specified number of nearest neighbours is not 0
 		if ( m_pTSP->numNN != 0 )
 		{
+			//first numVerts values of m_fNN set to 0
 			memset( m_fNN[i], 0, m_pTSP->numVerts*sizeof(float));
 			for ( j = 0; j < m_pTSP->numNN; j++ )
 			{
+				//sets the first numNN nearest neighbours to 1
 				m_fNN[i][m_pTSP->nnList[i][j]] = 1.0f;
 			}
 		}
+
+		//if no nearest neighbours specified
 		else
 		{
+			//everything is set as nearest neighbour
 			for ( j = 0; j < m_pTSP->numVerts; j++ )
 				m_fNN[i][j] = 1.0f;
 		}
+
+		//from 0 to numverts
 		for ( j = 0; j < m_pTSP->numVerts; j++ )
 		{
+			//pheromone value is set
 			m_pher[i][j] = val;
+
+			//inverse square of edge distances
 			m_iDistSq[i][j] = 1.0f/(m_pTSP->edgeDist[i][j]*m_pTSP->edgeDist[i][j]);
+
+			//pheromone / edgeDist*
 			m_weights[i][j] = m_pher[i][j]/(m_pTSP->edgeDist[i][j]*m_pTSP->edgeDist[i][j]);
 #ifndef VANILLA
+
+			//weight = (weight) * (1 + (1000*m_fNN)) - makes nearest neighbour edges 1000x more likely to be picked
 			m_weights[i][j] *= ( 1.0f + 1000.0f * m_fNN[i][j] );
 #endif
 		}
 	}
 
+	// e^(-1.30102999566) / numVerts)
 	float a = exp( log(0.05) / (float)m_pTSP->numVerts );
+
 	int n = m_pTSP->numVerts;
+
+	//if there are not 0 nearest neighbours
 	if ( m_pTSP->numNN != 0 )
 		n = m_pTSP->numNN;
 
+	//mmasConst is (1-a) / (n+1) * a * 0.5);
 	mmasConst = (1.0f - a ) / ( ((float)n + 1.0f) * a * 0.5f);
 
 }
@@ -200,6 +228,8 @@ void AntSystem::DoTours( void )
 #ifdef USE_OMP // run an ant per thread in the tour construction phase
 #pragma omp parallel for 
 #endif
+
+	//each ant constructs a tour
 	for ( int i = 0; i < m_nAnts; i++ )
 	{
 		m_pAnts[i].ConstructTour();
@@ -417,6 +447,8 @@ void AntSystem::Solve( int maxIterations, int maxStagnantIterations, bool contin
 	bool stagnated = false;
 	timers->Clear();
 	iStagnation = -1; // sentinel value indicates no stagnation
+
+	//loop will continue until the max number of iterations are reacher
 	for ( i = 0; i < maxIterations && !(stagnated && !continueStagnant); i++ )
 	{
 		Iterate();

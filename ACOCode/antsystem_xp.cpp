@@ -235,6 +235,8 @@ void AntSystem::DoTours( void )
 		m_pAnts[i].ConstructTour();
 	}
 
+
+	//checks the ants for the shortest tour distance
 	for ( int i = 0; i < m_nAnts; i++ )
 	{
 		if ( m_pAnts[i].tourDist < m_shortestDist )
@@ -257,6 +259,7 @@ void AntSystem::DepositFromTour( int *tour, float tourLength )
 {
 	float deltaPher = 1.0f / tourLength;
 	
+	//adds pheromone to the specified edges
 	for ( int i = 0; i < m_pTSP->numVerts; i++ )
 	{
 		m_pher[tour[i]][tour[(i+1)%m_pTSP->numVerts]] += deltaPher;
@@ -271,6 +274,8 @@ void AntSystem::Deposit( void )
 	static int count = 0;
 
 	float dBest = 1e20f;
+
+	//determines the best ant
 	for ( int i = 0; i < m_nAnts; i++ )
 	{
 		if ( m_pAnts[i].tourDist < dBest )
@@ -355,8 +360,13 @@ void AntSystem::Deposit( void )
 #ifdef USE_OMP
 #pragma omp parallel for
 #endif
+
+	//PHEROMONE EVAPORATION
+
+	//loops through the vertices
 	for ( int i = 0; i < m_pTSP->numVerts; i++ )
 	{
+		//loops through every 16th vertex
  		for ( int j = 0; j < m_pTSP->numVerts; j+=16 )
 		{
 			memcpy(pher, m_pher[i]+j, 16*sizeof(float) );
@@ -439,6 +449,8 @@ void AntSystem::Iterate( void )
 
 void AntSystem::Solve( int maxIterations, int maxStagnantIterations, bool continueStagnant )
 {
+
+	//performs an initial clear of the any system
 	Clear();
 	float shortestSoFar = 1e20f;
 	int sinceChange = 0;
@@ -448,7 +460,7 @@ void AntSystem::Solve( int maxIterations, int maxStagnantIterations, bool contin
 	timers->Clear();
 	iStagnation = -1; // sentinel value indicates no stagnation
 
-	//loop will continue until the max number of iterations are reacher
+	//loop will continue until the max number of iterations are reached
 	for ( i = 0; i < maxIterations && !(stagnated && !continueStagnant); i++ )
 	{
 		Iterate();

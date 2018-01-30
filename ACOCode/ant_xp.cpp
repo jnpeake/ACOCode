@@ -402,11 +402,17 @@ void Ant::ConstructTour( void )
 #else
 		tour[i] = iRoulette( m_as->m_weights[tour[i-1]], tabu, nVert16 );
 #endif
+
+		//after every roulette, the Tabu is changed
 		int iTabu = (tour[i]/16);
 		int jTabu = tour[i]%16;
 		tabu[iTabu] |= (1<<jTabu);
+
+		//the distance is added to the overall tour distance
 		tourDist += tsp->edgeDist[tour[i]][tour[i-1]];
 	}	
+
+	//the weight between the final two edges of the tour is printed
 	tourDist += tsp->edgeDist[tour[0]][tour[tsp->numVerts-1]];
 	if (tourDist == 0)
 	{
@@ -427,23 +433,45 @@ int Ant::iRoulette( float *weights, int *tabu, int nWeights )
 
 	int tabuMask = tabu[0];
 
+	printf("\n  nWeights: %d",nWeights);
+	//fills curIndices, curWeights arrays with 0s runningIndex arrays with i
 	for (i = 0; i < 16; i++)
 	{
 		curIndices[i] = curWeights[i] = 0.0f;
 		runningIndex[i] = (float)i;
 	}
 
+	//nWeights is the number of vertices padded to a multiple of 16. This is divided into 16 to emulate vectorization.
 	for (int i = 0; i < nWeights / 16; i++)
 	{
+
+		//copies values from weights into nextWeights. this loads the next 16 weights into nextweights.
 		memcpy(nextWeights, weights + i * 16, 16 * sizeof(float));
+
+		//copies values from runningIndex into nextIndices. this loads the next 16 indices into nextIndices.
 		memcpy(nextIndices, runningIndex, 16 * sizeof(float));
+
+		//generates random numbers
 		avxRandom(randoms);
+
+
+		//forloop makes use of nextWeights
 		for (j = 0; j < 16; j++)
 		{
+
+			printf("\n tabu mask: %d  1<<j:%d", tabuMask, (1 << j));
+
+			//if tabu mask = 1, the weight is set to 0 as the vertex cannot be visited
 			if (tabuMask&(1 << j))
 				nextWeights[j] = 0.0f;
+
+			//weight is multiplied by the random number
 			float roulette = nextWeights[j] * randoms[j];
+
+			printf("\n  roulette: %f  curWeights:%d", roulette, curWeights[j]);
 			bool gtMask = roulette > curWeights[j];
+
+			//if roulette is greater than current weight, current weight is set to roulette 
 			if (gtMask)
 			{
 				curWeights[j] = roulette;
@@ -451,10 +479,14 @@ int Ant::iRoulette( float *weights, int *tabu, int nWeights )
 			}
 			runningIndex[j] += 16.0f;
 		}
+		//tabuMask set to next value of tabu array
 		tabuMask = tabu[i + 1];
 	}
+	//biggestVal and indexOfBiggest initialized
 	float biggestVal = 0.0f;
 	int indexOfBiggest = 0;
+
+	//the highest weight is returned
 	for (int i = 0; i < 16; i++)
 	{
 		if (curWeights[i] > biggestVal)

@@ -11,6 +11,12 @@ typedef struct
 	int index;
 } distSort;
 
+typedef struct
+{
+	float nnMask; //mask with bits set for vector lanes which contains NN
+	int vectIndex; //index of pheromone matrix vector which contains NNs
+} nearestNeighbour;
+
 typedef enum 
 {
 	EDGE_WEIGHT_EUC2D,
@@ -39,7 +45,7 @@ public:
 	int numNN;
 
 	int (*distanceFunc)(float, float, float, float);
-
+	/*
 	void FillNNList( int iList )
 	{
 		//*tempList is a distSort array of size numverts-1 * 8
@@ -69,7 +75,44 @@ public:
 		}
 		free( tempList );
 	}
+	*/
 
+	void FillNNList(int iList)
+	{
+		for (int i = 0; i < numVerts; i++)
+		{
+			{
+				//*tempList is a distSort array of size numverts-1 * 8
+				//distSort is a struct declared earlier, with two parameters:
+				//float dist;
+				//int index;
+				printf("\n Size of distSort %d ", sizeof(nearestNeighbour));
+				nearestNeighbour *tempList = (nearestNeighbour*)malloc((numVerts - 1) * sizeof(nearestNeighbour));
+				int count = 0;
+				for (int i = 0; i < numVerts; i++)
+				{
+					//checks if i matches the iList parameter, which itself is the iterating value of another for loop
+					//if false, adds a distSort struct to the array with the index i and a dist value of the value at i, iList of the edgeDist
+					if (i != iList)
+					{
+						/*
+						tempList[count].index = i;
+						tempList[count].dist = edgeDist[i][iList];
+						//printf("\n Temp List %d data: Index: %d Dist: %f", count, i, edgeDist[i][iList]);
+						count++;
+						*/
+					}
+				}
+				qsort(tempList, numVerts - 1, sizeof(distSort), nnComp);
+				for (int i = 0; i < numNN; i++)
+				{
+					//printf("\n Adding value %d to nnList at position %d,%d", tempList[i].index, iList, i);
+					//nnList[iList][i] = tempList[i].index;
+				}
+				free(tempList);
+			}
+		}
+	}
 	static int EucDistance( float x0, float y0, float x1, float y1 )
 	{
 		float d = (x0-x1)*(x0-x1) + (y0-y1)*(y0-y1);

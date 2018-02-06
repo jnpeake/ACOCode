@@ -55,6 +55,8 @@ void AntSystem::Init( int nAnts, TSP *tsp, int seed )
 		memset( m_weights[i], 0, nRowAlloc * sizeof( float ) );
 		memset( m_iDistSq[i], 0, nRowAlloc * sizeof( float ) );
 		memset( m_fNN[i], 0, nRowAlloc * sizeof( float ) );
+
+		
 	}
 
 	// create ants
@@ -136,7 +138,7 @@ void AntSystem::Clear( void )
 		int i0 = tour[i];
 
 		int i1 = tour[(i+1)%m_pTSP->numVerts];
-		printf("\n SANITY CHECK i1: %d", i1);
+		//printf("\n SANITY CHECK i1: %d", i1);
 		sanityCheck += m_pTSP->edgeDist[i0][i1];
 	}
 	//memcpy( m_shortestTour, tour, m_pTSP->numVerts * sizeof( int ) );
@@ -183,7 +185,7 @@ void AntSystem::Clear( void )
 			//inverse square of edge distances
 			m_iDistSq[i][j] = 1.0f/(m_pTSP->edgeDist[i][j]*m_pTSP->edgeDist[i][j]);
 
-			//pheromone / edgeDist*
+			//pheromone / edgeDist^2
 			m_weights[i][j] = m_pher[i][j]/(m_pTSP->edgeDist[i][j]*m_pTSP->edgeDist[i][j]);
 #ifndef VANILLA
 
@@ -191,6 +193,16 @@ void AntSystem::Clear( void )
 			m_weights[i][j] *= ( 1.0f + 1000.0f * m_fNN[i][j] );
 #endif
 		}
+	}
+
+	for (int j = 0; j < m_pTSP->numVerts-1; j++)
+	{
+		printf("\n %d ",j);
+		for (int k = 0; k < m_pTSP->numVerts-1; k++)
+		{
+			printf(" %f", m_weights[j][k]);
+		}
+		
 	}
 
 	// e^(-1.30102999566) / numVerts)

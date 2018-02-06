@@ -4,6 +4,7 @@
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
+#include <list>
 
 typedef struct
 {
@@ -36,6 +37,10 @@ static int nnComp( const void *p0, const void *p1 )
 		return 0;
 }
 
+
+
+
+
 class TSP
 {
 public:
@@ -43,8 +48,30 @@ public:
 	int numVerts;
 	int **nnList;
 	int numNN;
+	std::list<nearestNeighbour> *neighbourVectors;
+	nearestNeighbour *newNN;
+	
+	// nn list
+	/*
 
+	;
+	nearestNeighbour *newNN;
+
+	std::list<nearestNeighbour> nList;
+	nList.push_back()
+		for (nearestNeighbour item : nList)
+		{
+
+		}
+	auto iter = nList.begin();
+	while (iter != nList.end())
+	{
+		// item is *iter
+		iter++;
+	}
+*/
 	int (*distanceFunc)(float, float, float, float);
+	
 	/*
 	void FillNNList( int iList )
 	{
@@ -76,43 +103,104 @@ public:
 		free( tempList );
 	}
 	*/
-
+	
 	void FillNNList(int iList)
 	{
-		for (int i = 0; i < numVerts; i++)
-		{
+
+			std::list<nearestNeighbour> *newNN = new std::list<nearestNeighbour>[numNN];
+			//emulated code
+			int matrixLength = numVerts;
+
+			if (matrixLength % 16)
+				matrixLength = 16 * (matrixLength / 16 + 1);
+
+			float** distMatrix = (float**)malloc(matrixLength * sizeof(float*));
+
+			for (int i = 0; i < numVerts; i++)
+				distMatrix[i] = (float*)malloc(16 * sizeof(float));
+
+			for (int i = 0; i < matrixLength/16; i++)
 			{
-				//*tempList is a distSort array of size numverts-1 * 8
-				//distSort is a struct declared earlier, with two parameters:
-				//float dist;
-				//int index;
-				printf("\n Size of distSort %d ", sizeof(nearestNeighbour));
-				nearestNeighbour *tempList = (nearestNeighbour*)malloc((numVerts - 1) * sizeof(nearestNeighbour));
-				int count = 0;
-				for (int i = 0; i < numVerts; i++)
+				memcpy(distMatrix, edgeDist + i * 16, 16 * sizeof(float));
+			}
+
+
+		
+			//*tempList is a distSort array of size numverts-1 * 8
+			//distSort is a struct declared earlier, with two parameters:
+			//float dist;
+			//int index;
+			printf("\n Size of distSort %d ", sizeof(distSort));
+			distSort *tempList = (distSort*)malloc((numVerts - 1) * sizeof(distSort));
+			int count = 0;
+			for (int i = 0; i < numVerts; i++)
+			{
+				//checks if i matches the iList parameter, which itself is the iterating value of another for loop
+				//if false, adds a distSort struct to the array with the index i and a dist value of the value at i, iList of the edgeDist
+
+				//the purpose of this for loop is to get the list of weights for the vertex at iList - stay the same as default
+				if (i != iList)
 				{
-					//checks if i matches the iList parameter, which itself is the iterating value of another for loop
-					//if false, adds a distSort struct to the array with the index i and a dist value of the value at i, iList of the edgeDist
-					if (i != iList)
+						
+					tempList[count].index = i;
+					tempList[count].dist = edgeDist[i][iList];
+					//printf("\n Temp List %d data: Index: %d Dist: %f", count, i, edgeDist[i][iList]);
+					count++;
+						
+				}
+			}
+			qsort(tempList, numVerts - 1, sizeof(distSort), nnComp);
+
+		
+
+
+			/////now we have the sorted list - time to find the index of the matrices in the pheromone matrix
+			for (int i = 0; i < numNN; i++)
+			{
+
+				if (tempList[i].index != -1)
+				{
+					int *mask;
+					mask = (int*)malloc(16 * sizeof(int));
+					memset(mask, 0, 16 * sizeof(int));
+
+					nearestNeighbour _nn;
+					_nn.vectIndex = tempList[i].index / 16;
+					int remainder = tempList[i].index % 16;
+					mask[remainder] = 1;
+
+					printf("\niList:%d Original Index: %d, Vector Index %d, Remainder %d", iList, tempList[i].index, _nn.vectIndex, remainder);
+					tempList[i].index = -1;
+					printf("\n INDEX (Should be -1): %d", tempList[i].index);
+					for (int j = 0; j < numNN; j++)
 					{
-						/*
-						tempList[count].index = i;
-						tempList[count].dist = edgeDist[i][iList];
-						//printf("\n Temp List %d data: Index: %d Dist: %f", count, i, edgeDist[i][iList]);
-						count++;
-						*/
+						if (tempList[j].index / 16 == _nn.vectIndex && tempList[j].index != -1)
+						{
+							int remainder = tempList[j].index % 16;
+							mask[remainder] = 1;
+							tempList[j].index = -1;
+						}
+					}
+
+					newNN->push_back(_nn);
+					printf("\n INDEX: %d \n", _nn.vectIndex);
+					for (int j = 0; j < 16; j++)
+					{
+						printf(" %d",mask[j]);	
 					}
 				}
-				qsort(tempList, numVerts - 1, sizeof(distSort), nnComp);
-				for (int i = 0; i < numNN; i++)
-				{
-					//printf("\n Adding value %d to nnList at position %d,%d", tempList[i].index, iList, i);
-					//nnList[iList][i] = tempList[i].index;
-				}
-				free(tempList);
+
+				printf("\n%d",i);
+				
+				//printf("\n Adding value %d to nnList at position %d,%d", tempList[i].index, iList, i);
+				//nnList[iList][i] = tempList[i].index;
 			}
-		}
+			free(tempList);
+			neighbourVectors[iList] = *newNN;
+		
 	}
+
+	
 	static int EucDistance( float x0, float y0, float x1, float y1 )
 	{
 		float d = (x0-x1)*(x0-x1) + (y0-y1)*(y0-y1);
@@ -332,15 +420,19 @@ public:
 		numNN = nNearNeighbours;
 
 		//nnList is a pointer-to-pointer-to-int array of numVerts * 4
-		nnList = (int **)malloc( numVerts * sizeof(int*) );
-
+		//nnList = (int **)malloc( numVerts * sizeof(int*) );
+		neighbourVectors = new std::list<nearestNeighbour>[numVerts];
+		
+		
 		for ( i = 0; i < numVerts; i++ )
 		{
 			//each entry in nnList is a pointer-to-int array of numNN * 4
 			//nnList is filled with 20 nearest neighbours of each city
-			nnList[i] = (int*)malloc( numNN * sizeof( int ) );
+			//nnList[i] = (int*)malloc( numNN * sizeof( int ) );
 			FillNNList( i );
 		}
+
+		
 	}
 
 };

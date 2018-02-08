@@ -14,7 +14,7 @@ typedef struct
 
 typedef struct
 {
-	float nnMask; //mask with bits set for vector lanes which contains NN
+	int *nnMask; //mask with bits set for vector lanes which contains NN
 	int vectIndex; //index of pheromone matrix vector which contains NNs
 } nearestNeighbour;
 
@@ -30,9 +30,9 @@ typedef enum
 static int nnComp( const void *p0, const void *p1 )
 {
 	if ( ((distSort*)p0)->dist < ((distSort*)p1)->dist )
-		return -1;
-	else if ( ((distSort*)p0)->dist > ((distSort*)p1)->dist )
 		return 1;
+	else if ( ((distSort*)p0)->dist > ((distSort*)p1)->dist )
+		return -1;
 	else
 		return 0;
 }
@@ -109,23 +109,7 @@ public:
 
 			std::list<nearestNeighbour> *newNN = new std::list<nearestNeighbour>[numNN];
 			//emulated code
-			int matrixLength = numVerts;
 
-			if (matrixLength % 16)
-				matrixLength = 16 * (matrixLength / 16 + 1);
-
-			float** distMatrix = (float**)malloc(matrixLength * sizeof(float*));
-
-			for (int i = 0; i < numVerts; i++)
-				distMatrix[i] = (float*)malloc(16 * sizeof(float));
-
-			for (int i = 0; i < matrixLength/16; i++)
-			{
-				memcpy(distMatrix, edgeDist + i * 16, 16 * sizeof(float));
-			}
-
-
-		
 			//*tempList is a distSort array of size numverts-1 * 8
 			//distSort is a struct declared earlier, with two parameters:
 			//float dist;
@@ -151,6 +135,10 @@ public:
 			}
 			qsort(tempList, numVerts - 1, sizeof(distSort), nnComp);
 
+			for (int i = 0; i < numVerts; i++)
+			{
+				printf("\nI:%d Index: %d Weight: %f ",i, tempList[i].index, tempList[i].dist);
+			}
 		
 
 
@@ -160,37 +148,38 @@ public:
 
 				if (tempList[i].index != -1)
 				{
-					int *mask;
-					mask = (int*)malloc(16 * sizeof(int));
-					memset(mask, 0, 16 * sizeof(int));
+					
+					printf("\nIndex: %d Weight: %f ", tempList[i].index, tempList[i].dist);
 
 					nearestNeighbour _nn;
+					_nn.nnMask = (int*)malloc(16 * sizeof(int));
+					memset(_nn.nnMask, 0, 16 * sizeof(int));
 					_nn.vectIndex = tempList[i].index / 16;
 					int remainder = tempList[i].index % 16;
-					mask[remainder] = 1;
+					_nn.nnMask[remainder] = 1;
 
-					printf("\niList:%d Original Index: %d, Vector Index %d, Remainder %d", iList, tempList[i].index, _nn.vectIndex, remainder);
+					//printf("\niList:%d Original Index: %d, Vector Index %d, Remainder %d", iList, tempList[i].index, _nn.vectIndex, remainder);
 					tempList[i].index = -1;
-					printf("\n INDEX (Should be -1): %d", tempList[i].index);
+					//printf("\n INDEX (Should be -1): %d", tempList[i].index);
 					for (int j = 0; j < numNN; j++)
 					{
 						if (tempList[j].index / 16 == _nn.vectIndex && tempList[j].index != -1)
 						{
 							int remainder = tempList[j].index % 16;
-							mask[remainder] = 1;
+							_nn.nnMask[remainder] = 1;
 							tempList[j].index = -1;
 						}
 					}
 
 					newNN->push_back(_nn);
-					printf("\n INDEX: %d \n", _nn.vectIndex);
+					//printf("\n INDEX: %d \n", _nn.vectIndex);
 					for (int j = 0; j < 16; j++)
 					{
-						printf(" %d",mask[j]);	
+						//printf(" %d",mask[j]);	
 					}
 				}
 
-				printf("\n%d",i);
+				//printf("\n%d",i);
 				
 				//printf("\n Adding value %d to nnList at position %d,%d", tempList[i].index, iList, i);
 				//nnList[iList][i] = tempList[i].index;

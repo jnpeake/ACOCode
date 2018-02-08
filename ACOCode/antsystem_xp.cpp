@@ -164,7 +164,7 @@ void AntSystem::Clear( void )
 			for ( j = 0; j < m_pTSP->numNN; j++ )
 			{
 				//sets the first numNN nearest neighbours to 1
-				m_fNN[i][m_pTSP->nnList[i][j]] = 1.0f;
+				//m_fNN[i][m_pTSP->nnList[i][j]] = 1.0f;
 			}
 		}
 
@@ -190,20 +190,11 @@ void AntSystem::Clear( void )
 #ifndef VANILLA
 
 			//weight = (weight) * (1 + (1000*m_fNN)) - makes nearest neighbour edges 1000x more likely to be picked
-			m_weights[i][j] *= ( 1.0f + 1000.0f * m_fNN[i][j] );
+			m_weights[i][j] *= ( 1.0f + 1000.0f);
 #endif
 		}
 	}
 
-	for (int j = 0; j < m_pTSP->numVerts-1; j++)
-	{
-		printf("\n %d ",j);
-		for (int k = 0; k < m_pTSP->numVerts-1; k++)
-		{
-			printf(" %f", m_weights[j][k]);
-		}
-		
-	}
 
 	// e^(-1.30102999566) / numVerts)
 	float a = exp( log(0.05) / (float)m_pTSP->numVerts );

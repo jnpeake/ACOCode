@@ -2,6 +2,8 @@
 #define _ANT_INC_
 
 #include "platform.h"
+#include "tsp.h"
+#include "list"
 #ifndef EMULATE
 #include <immintrin.h>
 #endif
@@ -45,6 +47,7 @@ public:
 
 	int iRoulette( float *weights, int *tabu, int nWeights );
 	int vRoulette( float *weights, int *tabu, int nWeights );
+	int csRoulette(float *weights, int *tabu, int nWeights, std::list<nearestNeighbour> nnList);
 
 	void ConstructTour( void ); 
 

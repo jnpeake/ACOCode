@@ -468,7 +468,7 @@ void AntSystem::Solve( int maxIterations, int maxStagnantIterations, bool contin
 	{
 		Iterate();
 #ifdef EMULATE
-		if ( i%20 == 0 )
+		//if ( i%20 == 0 )
 		  printf("Iteration: %d, Shortest Distance: %f, Timers: %f %f \n",i,m_shortestDist,timers->GetTimer(0), timers->GetTimer(1));
 #endif
 		if ( m_shortestDist < shortestSoFar )

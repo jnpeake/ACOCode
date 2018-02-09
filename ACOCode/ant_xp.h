@@ -45,9 +45,9 @@ public:
 	void avxRandom( float *r );
 #endif
 
-	int iRoulette( float *weights, int *tabu, int nWeights );
+	int iRoulette( float *weights, int *tabu, int nWeights /*std::list<nearestNeighbour> nnList*/);
 	int vRoulette( float *weights, int *tabu, int nWeights );
-	int csRoulette(float *weights, int *tabu, int nWeights, std::list<nearestNeighbour> nnList);
+	int csRoulette(float *weights, int *tabu, int nWeights, std::vector<nearestNeighbour> nnList, int numNN);
 
 	void ConstructTour( void ); 
 

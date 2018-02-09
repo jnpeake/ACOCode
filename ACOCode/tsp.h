@@ -4,7 +4,7 @@
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
-#include <list>
+#include <vector>
 
 typedef struct
 {
@@ -30,9 +30,9 @@ typedef enum
 static int nnComp( const void *p0, const void *p1 )
 {
 	if ( ((distSort*)p0)->dist < ((distSort*)p1)->dist )
-		return 1;
-	else if ( ((distSort*)p0)->dist > ((distSort*)p1)->dist )
 		return -1;
+	else if ( ((distSort*)p0)->dist > ((distSort*)p1)->dist )
+		return 1;
 	else
 		return 0;
 }
@@ -48,7 +48,7 @@ public:
 	int numVerts;
 	int **nnList;
 	int numNN;
-	std::list<nearestNeighbour> *neighbourVectors;
+	std::vector<nearestNeighbour> *neighbourVectors;
 	nearestNeighbour *newNN;
 	
 	// nn list
@@ -107,14 +107,14 @@ public:
 	void FillNNList(int iList)
 	{
 
-			std::list<nearestNeighbour> *newNN = new std::list<nearestNeighbour>[numNN];
+			std::vector<nearestNeighbour> *newNN = new std::vector<nearestNeighbour>[numNN];
 			//emulated code
 
 			//*tempList is a distSort array of size numverts-1 * 8
 			//distSort is a struct declared earlier, with two parameters:
 			//float dist;
 			//int index;
-			printf("\n Size of distSort %d ", sizeof(distSort));
+			//printf("\n Size of distSort %d ", sizeof(distSort));
 			distSort *tempList = (distSort*)malloc((numVerts - 1) * sizeof(distSort));
 			int count = 0;
 			for (int i = 0; i < numVerts; i++)
@@ -135,10 +135,6 @@ public:
 			}
 			qsort(tempList, numVerts - 1, sizeof(distSort), nnComp);
 
-			for (int i = 0; i < numVerts; i++)
-			{
-				printf("\nI:%d Index: %d Weight: %f ",i, tempList[i].index, tempList[i].dist);
-			}
 		
 
 
@@ -148,8 +144,7 @@ public:
 
 				if (tempList[i].index != -1)
 				{
-					
-					printf("\nIndex: %d Weight: %f ", tempList[i].index, tempList[i].dist);
+		
 
 					nearestNeighbour _nn;
 					_nn.nnMask = (int*)malloc(16 * sizeof(int));
@@ -157,6 +152,10 @@ public:
 					_nn.vectIndex = tempList[i].index / 16;
 					int remainder = tempList[i].index % 16;
 					_nn.nnMask[remainder] = 1;
+					float futureWeight = 0.014715 / (tempList[i].dist * tempList[i].dist);
+
+					if(iList == 42)
+						printf("\n FutureWeight: %f Index :%d VectorIndex:%d", futureWeight,tempList[i].index,_nn.vectIndex);
 
 					//printf("\niList:%d Original Index: %d, Vector Index %d, Remainder %d", iList, tempList[i].index, _nn.vectIndex, remainder);
 					tempList[i].index = -1;
@@ -171,6 +170,7 @@ public:
 						}
 					}
 
+			
 					newNN->push_back(_nn);
 					//printf("\n INDEX: %d \n", _nn.vectIndex);
 					for (int j = 0; j < 16; j++)
@@ -410,7 +410,7 @@ public:
 
 		//nnList is a pointer-to-pointer-to-int array of numVerts * 4
 		//nnList = (int **)malloc( numVerts * sizeof(int*) );
-		neighbourVectors = new std::list<nearestNeighbour>[numVerts];
+		neighbourVectors = new std::vector<nearestNeighbour>[numVerts];
 		
 		
 		for ( i = 0; i < numVerts; i++ )

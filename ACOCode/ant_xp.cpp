@@ -367,8 +367,11 @@ void Ant::ConstructTour( void )
 	tourDist = 0.0f;
 	nTour = 0;
 	TSP *tsp = m_as->GetTSP();
+	int numNN = m_as->GetTSP()->numNN;
 	// zero the tabu list
 	memset( tabu, 0, nVert16*sizeof(int));
+	if (numNN % 16)
+		numNN = 16 * (numNN / 16 + 1);
 
 	// pick a random start city
 	//create float array
@@ -392,21 +395,36 @@ void Ant::ConstructTour( void )
 
 	//shifts the bit of 1 by jTabu - so if jTabu is 10, tabu[iTabu] will be 1024 as 00000000001 (1) becomes 10000000000 (1024) as the bit has been shifted 10 places
 	tabu[iTabu] |= (1<<jTabu);
-	//printf("\n iTabu: %d, jTabu: %d, tabu[iTabu]: %d", iTabu, jTabu, tabu[iTabu]);
+	//printf("\n iLast: %d iTabu: %d, jTabu: %d, tabu[iTabu]: %d",iLast, iTabu, jTabu, tabu[iTabu]);
+
 
 	//this for loop constructs the tour. passes edge weights, tabu list and nVert 16
-	for ( i = 1; i < tsp->numVerts; i++ )
+	for (i = 1; i < tsp->numVerts; i++)
 	{
+
+		//printf("\n City:%d", tour[i-1]);
 #ifdef USE_VROULETTE
-		tour[i] = vRoulette( m_as->m_weights[tour[i-1]], tabu, nVert16 );
+		tour[i] = vRoulette(m_as->m_weights[tour[i - 1]], tabu, nVert16);
 #else
-		tour[i] = csRoulette( m_as->m_weights[tour[i-1]], tabu, tsp->numVerts, tsp->neighbourVectors[i-1]);
+		tour[i] = csRoulette(m_as->m_weights[tour[i - 1]], tabu, nVert16, tsp->neighbourVectors[tour[i - 1]], numNN);
+		if (tour[i] == -1)
+		{
+			tour[i] = iRoulette(m_as->m_weights[tour[i - 1]], tabu, nVert16/*, tsp->neighbourVectors[tour[i-1]]*/);
+#endif
+		}
+		//tour[i] = iRoulette(m_as->m_weights[tour[i - 1]], tabu, nVert16/*, tsp->neighbourVectors[tour[i-1]]*/);
 #endif
 
 		//after every roulette, the Tabu is changed
 		int iTabu = (tour[i]/16);
 		int jTabu = tour[i]%16;
+		//printf("\ntabu[iTabu]: %d",tabu[iTabu]);
 		tabu[iTabu] |= (1<<jTabu);
+		//printf("\n iLast: %d iTabu: %d, jTabu: %d, 1<<jTabu:%d, tabu[iTabu]: %d", iLast, iTabu, jTabu,1<<jTabu, tabu[iTabu]);
+		for (int i = 0; i < nVert16; i++)
+		{
+			//printf("\nTabu %d: %d", i, tabu[i]);
+		}
 
 		//the distance is added to the overall tour distance
 		tourDist += tsp->edgeDist[tour[i]][tour[i-1]];
@@ -420,7 +438,7 @@ void Ant::ConstructTour( void )
 	}
 }
 #endif
-int Ant::iRoulette( float *weights, int *tabu, int nWeights )
+int Ant::iRoulette( float *weights, int *tabu, int nWeights/*, std::list<nearestNeighbour> nnList*/)
 {
 	int i, j;
 
@@ -429,17 +447,46 @@ int Ant::iRoulette( float *weights, int *tabu, int nWeights )
 	float nextIndices[16];
 	float curIndices[16];
 	float curWeights[16];
+	//float nnWeights[32];
 	float randoms[16];
 
 	int tabuMask = tabu[0];
 
-	printf("\n  nWeights: %d",nWeights);
+	//printf("\n  nWeights: %d", nVerts);
 	//fills curIndices, curWeights arrays with 0s runningIndex arrays with i
 	for (i = 0; i < 16; i++)
 	{
 		curIndices[i] = curWeights[i] = 0.0f;
 		runningIndex[i] = (float)i;
 	}
+
+	//std::list<nearestNeighbour> currentNN = nnList;
+	//auto iter = currentNN.begin();
+	//int count = 0;
+
+	/*
+	while (iter != currentNN.end())
+	{
+
+		for (int j = 0; j < 16; j++)
+		{
+			if ((*iter).nnMask[j] == 1)
+			{
+				if (tabu[(*iter).vectIndex] & (1 << j))
+				{
+					nnWeights[count] = 0;
+				}
+				else
+				{
+					nnWeights[count] = weights[(((*iter).vectIndex) * 16) + j];
+				}
+				count++;
+			}
+		}
+		iter++;
+
+	}
+	*/
 
 	//nWeights is the number of vertices padded to a multiple of 16. This is divided into 16 to emulate vectorization.
 	for (int i = 0; i < nWeights / 16; i++)
@@ -459,7 +506,7 @@ int Ant::iRoulette( float *weights, int *tabu, int nWeights )
 		for (j = 0; j < 16; j++)
 		{
 
-			printf("\n tabu mask: %d  1<<j:%d", tabuMask, (1 << j));
+			//printf("\n tabu mask: %d  1<<j:%d", tabuMask, (1 << j));
 
 			//if tabu mask = 1, the weight is set to 0 as the vertex cannot be visited
 			if (tabuMask&(1 << j))
@@ -468,7 +515,7 @@ int Ant::iRoulette( float *weights, int *tabu, int nWeights )
 			//weight is multiplied by the random number
 			float roulette = nextWeights[j] * randoms[j];
 
-			printf("\n  roulette: %f  curWeights:%d", roulette, curWeights[j]);
+			//printf("\n  roulette: %f  curWeights:%d", roulette, curWeights[j]);
 			bool gtMask = roulette > curWeights[j];
 
 			//if roulette is greater than current weight, current weight is set to roulette 
@@ -479,8 +526,8 @@ int Ant::iRoulette( float *weights, int *tabu, int nWeights )
 			}
 			runningIndex[j] += 16.0f;
 		}
-		//tabuMask set to next value of tabu array
-		tabuMask = tabu[i + 1];
+	//tabuMask set to next value of tabu array
+	tabuMask = tabu[i + 1];
 	}
 	//biggestVal and indexOfBiggest initialized
 	float biggestVal = 0.0f;
@@ -498,26 +545,21 @@ int Ant::iRoulette( float *weights, int *tabu, int nWeights )
 	return indexOfBiggest;
 }
 
-int Ant::csRoulette(float *weights, int *tabu, int nVerts, std::list<nearestNeighbour> nnList)
+int Ant::csRoulette(float *weights, int *tabu, int nVerts, std::vector<nearestNeighbour> nnList, int numNN)
 {
 	int i, j;
 
 	float runningIndex[16];
-	float nextWeights[20];
-	float nextIndices[16];
+	float nextWeights[16];
+	//float nextIndices[16];
 	float curIndices[16];
 	float curWeights[16];
+	float nnWeights[32];
 	float randoms[16];
 
-	printf("\nWEIGHTS: ");
-	for (i = 0; i < nVerts; i++)
-	{
-		printf(" %d: %f |", i,weights[i]);
-	}
+	//int tabuMask = tabu[0];
 
-	int tabuMask = tabu[0];
-
-	printf("\n  nWeights: %d", nVerts);
+	//printf("\n  nWeights: %d", nVerts);
 	//fills curIndices, curWeights arrays with 0s runningIndex arrays with i
 	for (i = 0; i < 16; i++)
 	{
@@ -525,42 +567,44 @@ int Ant::csRoulette(float *weights, int *tabu, int nVerts, std::list<nearestNeig
 		runningIndex[i] = (float)i;
 	}
 
-	std::list<nearestNeighbour> currentNN = nnList;
-	auto iter = currentNN.begin();
+	auto iter = nnList.begin();
 	int count = 0;
-	while (iter != currentNN.end())
+
+	
+	while (iter != nnList.end())
 	{
-		printf("\nVECTOR INDEX %d | Mask:",(*iter).vectIndex);
-		for (int j = 0; j < 16; j++)
-		{
-			printf("%d", (*iter).nnMask[j]);
-			//printf(" %d",(*iter).nnMask[j]);	
-		}
 
 		for (int j = 0; j < 16; j++)
 		{
 			if ((*iter).nnMask[j] == 1)
 			{
-				nextWeights[count] = weights[(((*iter).vectIndex)*16)+j];
-				printf("\n Index: %d Weight: %f", (((*iter).vectIndex)*16)+j, nextWeights[count]);
+				if (tabu[(*iter).vectIndex] & (1 << j))
+				{
+					nnWeights[count] = 0;
+				}
+				else
+				{
+					nnWeights[count] = weights[(((*iter).vectIndex) * 16) + j];
+				}
+				runningIndex[count] = (*iter).vectIndex;
 				count++;
 			}
-			//printf(" %d",(*iter).nnMask[j]);	
 		}
-		//printf("\n%f",(*iter).nnMask);
 		iter++;
-		
+
 	}
 
+
 	//nWeights is the number of vertices padded to a multiple of 16. This is divided into 16 to emulate vectorization.
-	for (int i = 0; i < nVerts / 16; i++)
+	for (int i = 0; i < numNN / 16; i++)
 	{
+		
 
 		//copies values from weights into nextWeights. this loads the next 16 weights into nextweights.
-		memcpy(nextWeights, weights + i * 16, 16 * sizeof(float));
+		memcpy(nextWeights, nnWeights + i * 16, 16 * sizeof(float));
 
 		//copies values from runningIndex into nextIndices. this loads the next 16 indices into nextIndices.
-		memcpy(nextIndices, runningIndex, 16 * sizeof(float));
+		//memcpy(nextIndices, runningIndex, 16 * sizeof(float));
 
 		//generates random numbers
 		avxRandom(randoms);
@@ -570,16 +614,10 @@ int Ant::csRoulette(float *weights, int *tabu, int nVerts, std::list<nearestNeig
 		for (j = 0; j < 16; j++)
 		{
 
-			printf("\n tabu mask: %d  1<<j:%d", tabuMask, (1 << j));
-
-			//if tabu mask = 1, the weight is set to 0 as the vertex cannot be visited
-			if (tabuMask&(1 << j))
-				nextWeights[j] = 0.0f;
-
 			//weight is multiplied by the random number
 			float roulette = nextWeights[j] * randoms[j];
 
-			printf("\n  roulette: %f  curWeights:%d", roulette, curWeights[j]);
+			//printf("\n  roulette: %f  curWeights:%d", roulette, curWeights[j]);
 			bool gtMask = roulette > curWeights[j];
 
 			//if roulette is greater than current weight, current weight is set to roulette 
@@ -591,7 +629,6 @@ int Ant::csRoulette(float *weights, int *tabu, int nVerts, std::list<nearestNeig
 			runningIndex[j] += 16.0f;
 		}
 		//tabuMask set to next value of tabu array
-		tabuMask = tabu[i + 1];
 	}
 	//biggestVal and indexOfBiggest initialized
 	float biggestVal = 0.0f;
@@ -606,7 +643,16 @@ int Ant::csRoulette(float *weights, int *tabu, int nVerts, std::list<nearestNeig
 			indexOfBiggest = curIndices[i];
 		}
 	}
-	return indexOfBiggest;
+
+	if (biggestVal == 0)
+	{
+		return -1;
+	}
+	else
+	{
+		return indexOfBiggest;
+	}
+	
 }
 
 int Ant::vRoulette( float *weights, int *tabu, int nWeights )
@@ -686,4 +732,4 @@ void Ant::avxRandom( float *r )
 		r[i] = (float)rSeed[i] * 2.328306437087974e-10;
 	}
 }
-#endif
+

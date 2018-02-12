@@ -370,8 +370,7 @@ void Ant::ConstructTour( void )
 	int numNN = m_as->GetTSP()->numNN;
 	// zero the tabu list
 	memset( tabu, 0, nVert16*sizeof(int));
-	if (numNN % 16)
-		numNN = 16 * (numNN / 16 + 1);
+
 
 	// pick a random start city
 	//create float array
@@ -447,7 +446,6 @@ int Ant::iRoulette( float *weights, int *tabu, int nWeights/*, std::list<nearest
 	float nextIndices[16];
 	float curIndices[16];
 	float curWeights[16];
-	//float nnWeights[32];
 	float randoms[16];
 
 	int tabuMask = tabu[0];
@@ -460,33 +458,7 @@ int Ant::iRoulette( float *weights, int *tabu, int nWeights/*, std::list<nearest
 		runningIndex[i] = (float)i;
 	}
 
-	//std::list<nearestNeighbour> currentNN = nnList;
-	//auto iter = currentNN.begin();
-	//int count = 0;
-
-	/*
-	while (iter != currentNN.end())
-	{
-
-		for (int j = 0; j < 16; j++)
-		{
-			if ((*iter).nnMask[j] == 1)
-			{
-				if (tabu[(*iter).vectIndex] & (1 << j))
-				{
-					nnWeights[count] = 0;
-				}
-				else
-				{
-					nnWeights[count] = weights[(((*iter).vectIndex) * 16) + j];
-				}
-				count++;
-			}
-		}
-		iter++;
-
-	}
-	*/
+	
 
 	//nWeights is the number of vertices padded to a multiple of 16. This is divided into 16 to emulate vectorization.
 	for (int i = 0; i < nWeights / 16; i++)
@@ -545,16 +517,17 @@ int Ant::iRoulette( float *weights, int *tabu, int nWeights/*, std::list<nearest
 	return indexOfBiggest;
 }
 
-int Ant::csRoulette(float *weights, int *tabu, int nVerts, std::vector<nearestNeighbour> nnList, int numNN)
+int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnList, int numNN)
 {
 	int i, j;
 
-	float runningIndex[16];
+	float *runningIndex = (float*)malloc(numNN * sizeof(float));
 	float nextWeights[16];
-	//float nextIndices[16];
+	float nextIndices[16];
+	float nextNN[16];
 	float curIndices[16];
 	float curWeights[16];
-	float nnWeights[32];
+	float *nnWeights = (float*)malloc(numNN * sizeof(float));
 	float randoms[16];
 
 	//int tabuMask = tabu[0];
@@ -564,35 +537,33 @@ int Ant::csRoulette(float *weights, int *tabu, int nVerts, std::vector<nearestNe
 	for (i = 0; i < 16; i++)
 	{
 		curIndices[i] = curWeights[i] = 0.0f;
-		runningIndex[i] = (float)i;
 	}
 
-	auto iter = nnList.begin();
 	int count = 0;
-
-	
-	while (iter != nnList.end())
+	for (int i = 0; i < numNN; i++)
 	{
-
 		for (int j = 0; j < 16; j++)
 		{
-			if ((*iter).nnMask[j] == 1)
+			if (nnList[i].vectIndex != -1)
 			{
-				if (tabu[(*iter).vectIndex] & (1 << j))
+				if (nnList[i].nnMask[j] == 1)
 				{
-					nnWeights[count] = 0;
+					if (tabu[nnList[i].vectIndex] & (1 << j))
+					{
+						nnWeights[count] = 0;
+					}
+					else
+					{
+						nnWeights[count] = weights[((nnList[i].vectIndex) * 16) + j];
+					}
+					runningIndex[count] = ((nnList[i].vectIndex) * 16) + j;
+					count++;
 				}
-				else
-				{
-					nnWeights[count] = weights[(((*iter).vectIndex) * 16) + j];
-				}
-				runningIndex[count] = (*iter).vectIndex;
-				count++;
 			}
 		}
-		iter++;
-
 	}
+
+	
 
 
 	//nWeights is the number of vertices padded to a multiple of 16. This is divided into 16 to emulate vectorization.
@@ -604,7 +575,7 @@ int Ant::csRoulette(float *weights, int *tabu, int nVerts, std::vector<nearestNe
 		memcpy(nextWeights, nnWeights + i * 16, 16 * sizeof(float));
 
 		//copies values from runningIndex into nextIndices. this loads the next 16 indices into nextIndices.
-		//memcpy(nextIndices, runningIndex, 16 * sizeof(float));
+		memcpy(nextIndices, runningIndex, 16 * sizeof(float));
 
 		//generates random numbers
 		avxRandom(randoms);

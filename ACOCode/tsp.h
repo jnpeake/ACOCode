@@ -15,7 +15,7 @@ typedef struct
 typedef struct
 {
 	int *nnMask; //mask with bits set for vector lanes which contains NN
-	int vectIndex; //index of pheromone matrix vector which contains NNs
+	int vectIndex = -1; //index of pheromone matrix vector which contains NNs
 } nearestNeighbour;
 
 typedef enum 
@@ -48,7 +48,7 @@ public:
 	int numVerts;
 	int **nnList;
 	int numNN;
-	std::vector<nearestNeighbour> *neighbourVectors;
+	nearestNeighbour **neighbourVectors;
 	nearestNeighbour *newNN;
 	
 	// nn list
@@ -107,7 +107,7 @@ public:
 	void FillNNList(int iList)
 	{
 
-			std::vector<nearestNeighbour> *newNN = new std::vector<nearestNeighbour>[numNN];
+			
 			//emulated code
 
 			//*tempList is a distSort array of size numverts-1 * 8
@@ -115,6 +115,7 @@ public:
 			//float dist;
 			//int index;
 			//printf("\n Size of distSort %d ", sizeof(distSort));
+			nearestNeighbour *newNN = (nearestNeighbour*)malloc(numNN * sizeof(nearestNeighbour));
 			distSort *tempList = (distSort*)malloc((numVerts - 1) * sizeof(distSort));
 			int count = 0;
 			for (int i = 0; i < numVerts; i++)
@@ -137,7 +138,7 @@ public:
 
 		
 
-
+			int count2 = 0;
 			/////now we have the sorted list - time to find the index of the matrices in the pheromone matrix
 			for (int i = 0; i < numNN; i++)
 			{
@@ -171,7 +172,9 @@ public:
 					}
 
 			
-					newNN->push_back(_nn);
+					newNN[count2] = _nn;
+					count2++;
+
 					//printf("\n INDEX: %d \n", _nn.vectIndex);
 					for (int j = 0; j < 16; j++)
 					{
@@ -184,8 +187,17 @@ public:
 				//printf("\n Adding value %d to nnList at position %d,%d", tempList[i].index, iList, i);
 				//nnList[iList][i] = tempList[i].index;
 			}
+
+			for (int i = count2; i < numNN; i++)
+			{
+				nearestNeighbour _nn;
+				_nn.nnMask = NULL;
+				_nn.vectIndex = -1;
+				newNN[count2] = _nn;
+				count2++;
+			}
 			free(tempList);
-			neighbourVectors[iList] = *newNN;
+			neighbourVectors[iList] = newNN;
 		
 	}
 
@@ -410,7 +422,7 @@ public:
 
 		//nnList is a pointer-to-pointer-to-int array of numVerts * 4
 		//nnList = (int **)malloc( numVerts * sizeof(int*) );
-		neighbourVectors = new std::vector<nearestNeighbour>[numVerts];
+		neighbourVectors = (nearestNeighbour**)malloc(numVerts * sizeof(nearestNeighbour**));
 		
 		
 		for ( i = 0; i < numVerts; i++ )

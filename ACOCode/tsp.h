@@ -14,7 +14,7 @@ typedef struct
 
 typedef struct
 {
-	int *nnMask; //mask with bits set for vector lanes which contains NN
+	int nnMask; //mask with bits set for vector lanes which contains NN
 	int vectIndex = -1; //index of pheromone matrix vector which contains NNs
 } nearestNeighbour;
 
@@ -137,7 +137,7 @@ public:
 			qsort(tempList, numVerts - 1, sizeof(distSort), nnComp);
 
 		
-
+			
 			int count2 = 0;
 			/////now we have the sorted list - time to find the index of the matrices in the pheromone matrix
 			for (int i = 0; i < numNN; i++)
@@ -145,33 +145,22 @@ public:
 
 				if (tempList[i].index != -1)
 				{
-		
-
 					nearestNeighbour _nn;
-					_nn.nnMask = (int*)malloc(16 * sizeof(int));
-					memset(_nn.nnMask, 0, 16 * sizeof(int));
+					_nn.nnMask = 0;
 					_nn.vectIndex = tempList[i].index / 16;
 					int remainder = tempList[i].index % 16;
-					_nn.nnMask[remainder] = 1;
-					float futureWeight = 0.014715 / (tempList[i].dist * tempList[i].dist);
-
-					if(iList == 42)
-						printf("\n FutureWeight: %f Index :%d VectorIndex:%d", futureWeight,tempList[i].index,_nn.vectIndex);
-
-					//printf("\niList:%d Original Index: %d, Vector Index %d, Remainder %d", iList, tempList[i].index, _nn.vectIndex, remainder);
+					_nn.nnMask |=  1UL << remainder;
 					tempList[i].index = -1;
-					//printf("\n INDEX (Should be -1): %d", tempList[i].index);
 					for (int j = 0; j < numNN; j++)
 					{
 						if (tempList[j].index / 16 == _nn.vectIndex && tempList[j].index != -1)
 						{
 							int remainder = tempList[j].index % 16;
-							_nn.nnMask[remainder] = 1;
+							_nn.nnMask |= 1UL << remainder;
 							tempList[j].index = -1;
 						}
-					}
-
-			
+					}		
+					//_nn.nnMask = (1 << _nn.nnMask) - 1;
 					newNN[count2] = _nn;
 					count2++;
 
@@ -198,6 +187,7 @@ public:
 			}
 			free(tempList);
 			neighbourVectors[iList] = newNN;
+			//free(newNN);
 		
 	}
 

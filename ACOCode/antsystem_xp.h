@@ -51,6 +51,8 @@ public:
 	void Clear( void );
 	void Solve( int maxIterations, int maxStagnantIterations, bool continueStagnant = false );
 	TSP *GetTSP( void ) { return m_pTSP; }
+	int fallbackCount;
+	int usingNNCount;
 
 	// return results
 	float GetShortestTourLength() { return m_shortestDist; }

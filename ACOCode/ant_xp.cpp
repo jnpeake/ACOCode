@@ -408,6 +408,7 @@ void Ant::ConstructTour( void )
 		tour[i] = csRoulette(m_as->m_weights[tour[i - 1]], tabu, nVert16, tsp->neighbourVectors[tour[i - 1]], numNN);
 		if (tour[i] == -1)
 		{
+			
 			tour[i] = iRoulette(m_as->m_weights[tour[i - 1]], tabu, nVert16/*, tsp->neighbourVectors[tour[i-1]]*/);
 #endif
 		}
@@ -546,7 +547,7 @@ int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnL
 		{
 			if (nnList[i].vectIndex != -1)
 			{
-				if (nnList[i].nnMask[j] == 1)
+				if (nnList[i].nnMask & (1 <<j))
 				{
 					if (tabu[nnList[i].vectIndex] & (1 << j))
 					{
@@ -575,7 +576,7 @@ int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnL
 		memcpy(nextWeights, nnWeights + i * 16, 16 * sizeof(float));
 
 		//copies values from runningIndex into nextIndices. this loads the next 16 indices into nextIndices.
-		memcpy(nextIndices, runningIndex, 16 * sizeof(float));
+		memcpy(nextIndices, runningIndex + i * 16, 16 * sizeof(float));
 
 		//generates random numbers
 		avxRandom(randoms);
@@ -595,7 +596,7 @@ int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnL
 			if (gtMask)
 			{
 				curWeights[j] = roulette;
-				curIndices[j] = runningIndex[j];
+				curIndices[j] = nextIndices[j];
 			}
 			runningIndex[j] += 16.0f;
 		}
@@ -620,10 +621,12 @@ int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnL
 
 	if (biggestVal == 0)
 	{
+		m_as->fallbackCount++;
 		return -1;
 	}
 	else
 	{
+		m_as->usingNNCount++;
 		return indexOfBiggest;
 	}
 	

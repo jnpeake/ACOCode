@@ -49,6 +49,8 @@ public:
 	int vRoulette( float *weights, int *tabu, int nWeights );
 	int csRoulette(float *weights, int *tabu, int nWeights, nearestNeighbour *nnList, int numNN);
 
+
+
 	void ConstructTour( void ); 
 
 	void Init( AntSystem *as, int *seeds );

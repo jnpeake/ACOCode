@@ -22,6 +22,8 @@ void AntSystem::Init( int nAnts, TSP *tsp, int seed )
 	m_shortestDist = 1e20f;
 
 	timers = new Timers(5);
+	fallbackCount = 0;
+	usingNNCount = 0;
 
 	int i;
 
@@ -468,8 +470,12 @@ void AntSystem::Solve( int maxIterations, int maxStagnantIterations, bool contin
 	{
 		Iterate();
 #ifdef EMULATE
-		if ( i%20 == 0 )
-		  printf("Iteration: %d, Shortest Distance: %f, Timers: %f %f \n",i,m_shortestDist,timers->GetTimer(0), timers->GetTimer(1));
+		if (i % 20 == 0)
+		{
+			printf("\nIteration: %d, Shortest Distance: %f, Timers: %f %f", i, m_shortestDist, timers->GetTimer(0), timers->GetTimer(1));
+			printf("\nFallback: %d, Used NN: %d",fallbackCount,usingNNCount);
+		}
+		
 #endif
 		if ( m_shortestDist < shortestSoFar )
 		{

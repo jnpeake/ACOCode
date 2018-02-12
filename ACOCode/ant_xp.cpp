@@ -601,6 +601,9 @@ int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnL
 		}
 		//tabuMask set to next value of tabu array
 	}
+
+	free(runningIndex);
+	free(nnWeights);
 	//biggestVal and indexOfBiggest initialized
 	float biggestVal = 0.0f;
 	int indexOfBiggest = 0;

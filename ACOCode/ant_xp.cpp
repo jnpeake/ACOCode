@@ -433,7 +433,7 @@ int Ant::iRoulette( float *weights, int *tabu, int nWeights )
 
 	int tabuMask = tabu[0];
 
-	printf("\n  nWeights: %d",nWeights);
+	//printf("\n  nWeights: %d",nWeights);
 	//fills curIndices, curWeights arrays with 0s runningIndex arrays with i
 	for (i = 0; i < 16; i++)
 	{
@@ -459,7 +459,7 @@ int Ant::iRoulette( float *weights, int *tabu, int nWeights )
 		for (j = 0; j < 16; j++)
 		{
 
-			printf("\n tabu mask: %d  1<<j:%d", tabuMask, (1 << j));
+			//printf("\n tabu mask: %d  1<<j:%d", tabuMask, (1 << j));
 
 			//if tabu mask = 1, the weight is set to 0 as the vertex cannot be visited
 			if (tabuMask&(1 << j))
@@ -468,7 +468,7 @@ int Ant::iRoulette( float *weights, int *tabu, int nWeights )
 			//weight is multiplied by the random number
 			float roulette = nextWeights[j] * randoms[j];
 
-			printf("\n  roulette: %f  curWeights:%d", roulette, curWeights[j]);
+			//printf("\n  roulette: %f  curWeights:%d", roulette, curWeights[j]);
 			bool gtMask = roulette > curWeights[j];
 
 			//if roulette is greater than current weight, current weight is set to roulette 

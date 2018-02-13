@@ -495,6 +495,11 @@ int Ant::iRoulette( float *weights, int *tabu, int nWeights )
 			indexOfBiggest = curIndices[i];
 		}
 	}
+
+	if (biggestVal < 0.001)
+	{
+		m_as->nnCount++;
+	}
 	return indexOfBiggest;
 }
 

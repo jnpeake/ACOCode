@@ -547,7 +547,7 @@ int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnL
 		{
 			if (nnList[i].vectIndex != -1)
 			{
-				if (nnList[i].nnMask & (1 <<j))
+				if (nnList[i].nnMask&(1 <<j))
 				{
 					if (tabu[nnList[i].vectIndex] & (1 << j))
 					{
@@ -560,6 +560,11 @@ int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnL
 					runningIndex[count] = ((nnList[i].vectIndex) * 16) + j;
 					count++;
 				}
+			}
+
+			else
+			{
+				break;
 			}
 		}
 	}

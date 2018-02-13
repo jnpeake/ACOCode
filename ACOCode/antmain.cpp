@@ -28,6 +28,8 @@ int main( int argc, char *argv[] )
   Timers *timers = new Timers(10);
 
   AntSystem *as = new AntSystem();
+
+  
   int seed = 12345;
 
   //determines seed, if specified

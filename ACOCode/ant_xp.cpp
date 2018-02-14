@@ -402,7 +402,10 @@ void Ant::ConstructTour( void )
 #else
 		tour[i] = iRoulette( m_as->m_weights[tour[i-1]], tabu, nVert16 );
 #endif
-
+		if (tour[i] == tour[i-1])
+		{
+			printf("This isn't supposed to happen");
+		}
 		//after every roulette, the Tabu is changed
 		int iTabu = (tour[i]/16);
 		int jTabu = tour[i]%16;

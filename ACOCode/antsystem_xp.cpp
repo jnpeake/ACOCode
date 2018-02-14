@@ -192,7 +192,7 @@ void AntSystem::Clear( void )
 #ifndef VANILLA
 
 			//weight = (weight) * (1 + (1000*m_fNN)) - makes nearest neighbour edges 1000x more likely to be picked
-			m_weights[i][j] *= ( 1.0f + 1000.0f);
+			//m_weights[i][j] *= ( 1.0f + 1000.0f);
 #endif
 		}
 	}

@@ -155,6 +155,7 @@ public:
 					{
 						if (tempList[j].index / 16 == _nn.vectIndex && tempList[j].index != -1)
 						{
+							
 							int remainder = tempList[j].index % 16;
 							_nn.nnMask |= 1UL << remainder;
 							tempList[j].index = -1;

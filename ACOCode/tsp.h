@@ -46,7 +46,6 @@ public:
 		//distSort is a struct declared earlier, with two parameters:
 		//float dist;
 		//int index;
-		printf("\n Size of distSort %d ", sizeof(distSort));
 		distSort *tempList = (distSort*)malloc( (numVerts-1) * sizeof( distSort ) );
 		int count = 0;
 		for ( int i = 0; i < numVerts; i++ )
@@ -217,7 +216,6 @@ public:
 		//allocates memory for the vertices - the space allocated is a matrix (number of vertices * sizeof(float), which is 4.
 		vertX = (float*)malloc( numVerts * sizeof(float) );
 		vertY = (float*)malloc( numVerts * sizeof(float) );
-		printf("\n Float Size %d", sizeof(float));
 		int iVert = 0;
 		//loop is performed for the previously specified number of vertices
 		for ( i = 0; i < numVerts; i++ )

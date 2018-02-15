@@ -28,7 +28,6 @@ void AntSystem::Init( int nAnts, TSP *tsp, int seed )
 
 	// intiailise pheromone matrix 
 	//ALLOC varies depending on whether EMULATE is defined or not - if yes it's the same as malloc, if not it's _mm_malloc
-	printf("\n Size of float*: %d", sizeof(float*));
 
 	//m_pher, m_weights, m_iDistSq and m_fNN are all pointer-to-pointer-to-float matrices of numVerts * 8
 	m_pher = (float**)ALLOC( (m_pTSP->numVerts * sizeof( float* )) );
@@ -42,7 +41,6 @@ void AntSystem::Init( int nAnts, TSP *tsp, int seed )
 	if ( nRowAlloc%16 )
 		nRowAlloc = 16 * (nRowAlloc/16 + 1 );
 
-	printf("\n nRowAlloc: %d", nRowAlloc);
 	for ( i = 0; i < m_pTSP->numVerts; i++ )
 	{
 		//each entry in the matrix is an array of nRowAlloc * 8
@@ -91,7 +89,6 @@ void AntSystem::Clear( void )
 	//shortest dist is initially set as a very large number
 	m_shortestDist = 1e20f;
 
-	printf("\n Shortest Distance: %d", m_shortestDist);
 
 	float aDist = 0.0f;
 	int i, j;
@@ -137,7 +134,6 @@ void AntSystem::Clear( void )
 		int i0 = tour[i];
 
 		int i1 = tour[(i+1)%m_pTSP->numVerts];
-		printf("\n SANITY CHECK i1: %d", i1);
 		sanityCheck += m_pTSP->edgeDist[i0][i1];
 	}
 	//memcpy( m_shortestTour, tour, m_pTSP->numVerts * sizeof( int ) );
@@ -149,7 +145,6 @@ void AntSystem::Clear( void )
 	//initial pheremone level is determined by nnTour
 
 	val = 1.0f/((float)aDist*rho);
-	printf("\n nnTour: %f Initial pheromone: %f\n",aDist,val);
 
 
 	//from 0 to numVerts
@@ -466,11 +461,11 @@ void AntSystem::Solve( int maxIterations, int maxStagnantIterations, bool contin
 	{
 		Iterate();
 #ifdef EMULATE
-		if (i % 20 == 0)
+		/*if (i % 20 == 0)
 		{
 			printf("\n Iteration: %d, Shortest Distance: %f, Timers: %f %f", i, m_shortestDist, timers->GetTimer(0), timers->GetTimer(1));
 			printf("\n Fallback: %d",nnCount);
-		}
+		}*/
 #endif
 		if ( m_shortestDist < shortestSoFar )
 		{
@@ -490,8 +485,8 @@ void AntSystem::Solve( int maxIterations, int maxStagnantIterations, bool contin
 		}
 	}
 #ifdef EMULATE
-	printf("Iteration: %d, Shortest Distance: %f, Shortest Tour: %d, Timers: %f %f \n", i, m_shortestDist, m_shortestTour, timers->GetTimer(0), timers->GetTimer(1));
-	printf("Timers: tour %e Pheromone %e\n",timers->GetTimer(0),timers->GetTimer(1));
+	//printf("Iteration: %d, Shortest Distance: %f, Shortest Tour: %d, Timers: %f %f \n", i, m_shortestDist, m_shortestTour, timers->GetTimer(0), timers->GetTimer(1));
+	//printf("Timers: tour %e Pheromone %e\n",timers->GetTimer(0),timers->GetTimer(1));
 #endif
 //	CalcStagnationMetrics();
 }

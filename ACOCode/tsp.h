@@ -340,7 +340,6 @@ public:
 		//allocates memory for the vertices - the space allocated is a matrix (number of vertices * sizeof(float), which is 4.
 		vertX = (float*)malloc( numVerts * sizeof(float) );
 		vertY = (float*)malloc( numVerts * sizeof(float) );
-		printf("\n Float Size %d", sizeof(float));
 		int iVert = 0;
 		//loop is performed for the previously specified number of vertices
 		for ( i = 0; i < numVerts; i++ )

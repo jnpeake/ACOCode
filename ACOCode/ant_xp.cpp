@@ -631,7 +631,6 @@ int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnL
 	}
 	else
 	{
-		printf("\nBiggest Val:%f", biggestVal);
 		m_as->usingNNCount++;
 		return indexOfBiggest;
 	}

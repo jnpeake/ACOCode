@@ -220,23 +220,40 @@ int Ant::iRoulette( float *weights, int *tabu, int nWeights )
 
 void Ant::seedAvxRandom( int *seeds )
 {
-   unsigned int c0;
-   unsigned int c1;
-	// constants for Numerical Recipes quick and dirty RNG
-	c0 = 1664525L;
-	c1 = 1013904223L;
+   __declspec(align(64)) unsigned int c0[16] = { 1664525L, 1664525L, 1664525L, 1664525L, 1664525L, 1664525L, 1664525L, 1664525L,1664525L, 1664525L, 1664525L, 1664525L, 1664525L, 1664525L, 1664525L, 1664525L };
+	__declspec(align(64)) unsigned int c1[16] = { 1013904223L, 1013904223L, 1013904223L, 1013904223L, 1013904223L, 	1013904223L, 1013904223L, 1013904223L,1013904223L, 1013904223L, 1013904223L, 1013904223L, 1013904223L, 1013904223L, 1013904223L, 1013904223L };
+	__declspec(align(64)) float factors[16] = { 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f,2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f };
 	
-	rSeed = _mm512_load_epi32( seeds );
-	rC0 = _mm512_extload_epi32( &c0, _MM_UPCONV_EPI32_NONE, _MM_BROADCAST_1X16, 0 );
-	rC1 = _mm512_extload_epi32( &c1, _MM_UPCONV_EPI32_NONE, _MM_BROADCAST_1X16, 0 );
+	rC0 = _mm512_load_epi32( &c0); //m512i
+	rC1 = _mm512_load_epi32( &c1); //m512i
+	factor = _mm512_load_ps( factors );
+	//printf("rC0\n");
+	//printVectorMM512i(rC0);
+	//printf("rC1 \n");
+	//printVectorMM512i(rC1);
+
 }
+
+#define USE_IMCI 0
 
 inline __m512 Ant::avxRandom( void )
 {
+#if USE_IMCI
 	// use AVX fused multiply-add to iterate RNG
 	rSeed = _mm512_fmadd_epi32( rC0, rSeed, rC1 );
 	// convert to float in range 0 to 1 and return
 	return _mm512_cvtfxpnt_round_adjustepu32_ps( rSeed, _MM_FROUND_TO_NEAREST_INT, _MM_EXPADJ_32 );
+#else
+	
+	// AVX has no integer fused multiply-addm use mul + add
+	rSeed = _mm512_mullo_epi32( rC0, rSeed );
+	rSeed = _mm512_add_epi32( rC1, rSeed );
+
+	// convert to float in range 0 to 1 and return
+	__m512 returnValue = _mm512_cvt_roundepu32_ps(rSeed, _MM_FROUND_TO_NEAREST_INT|_MM_FROUND_NO_EXC);
+
+	return _mm512_mul_ps(returnValue, factor);
+#endif
 }
 
 void Ant::ConstructTour( void )

@@ -27,6 +27,7 @@ public:
 	__m512i rSeed;
 	__m512i rC0;
 	__m512i rC1;
+	__m512 factor; // factor of 1/2^32 for converting random numbers
 	__m512 ones; // constant
 #else
 	unsigned int rSeed[16];

@@ -218,25 +218,126 @@ int Ant::iRoulette( float *weights, int *tabu, int nWeights )
 #endif
 }
 
-void Ant::seedAvxRandom( int *seeds )
+int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnList, int numNN)
 {
-   unsigned int c0;
-   unsigned int c1;
-	// constants for Numerical Recipes quick and dirty RNG
-	c0 = 1664525L;
-	c1 = 1013904223L;
-	
-	rSeed = _mm512_load_epi32( seeds );
-	rC0 = _mm512_extload_epi32( &c0, _MM_UPCONV_EPI32_NONE, _MM_BROADCAST_1X16, 0 );
-	rC1 = _mm512_extload_epi32( &c1, _MM_UPCONV_EPI32_NONE, _MM_BROADCAST_1X16, 0 );
+	__declspec(align(64)) float indexSeed[16] = { 0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f,
+		8.0f, 9.0f, 10.0f, 11.0f, 12.0f, 13.0f, 14.0f, 15.0f };
+	__declspec(align(64)) float indexStep[16] = { 16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f,
+		16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f };
+	__declspec(align(64)) float minusOnes[16] = { -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f };
+
+	__m512 minusOne = _mm512_load_ps(minusOnes);
+	__m512 runningIndex = _mm512_load_ps(indexSeed);
+	__m512 delta16 = _mm512_load_ps(indexStep);
+	__m512 curIndices = minusOne;
+	__m512 curWeights = minusOne;
+	__mmask16 tabuMask = _mm512_int2mask(tabu[0]);
+	float *runningIndex = (float*)malloc(numNN * sizeof(float));
+	float nextNN[16];
+	float *nnWeights = (float*)malloc(numNN * sizeof(float));
+
+	int count = 0;
+	for (int i = 0; i < numNN; i++)
+	{
+		for (int j = 0; j < 16; j++)
+		{
+			if (nnList[i].vectIndex != -1)
+			{
+				if (nnList[i].nnMask&(1 << j))
+				{
+					if (tabu[nnList[i].vectIndex] & (1 << j))
+					{
+						nnWeights[count] = 0;
+					}
+					else
+					{
+						nnWeights[count] = weights[((nnList[i].vectIndex) * 16) + j];
+					}
+					runningIndex[count] = ((nnList[i].vectIndex) * 16) + j;
+					count++;
+				}
+			}
+
+			else
+			{
+				break;
+			}
+		}
+	}
+
+	for (int i = 0; i < nVerts / 16; i++)
+	{
+		__m512 nextWeights = _mm512_load_ps(nnWeights + i * 16);
+		__m512 nextIndices = runningIndex;
+		__m512 randoms = avxRandom();
+
+		nextWeights = _mm512_mul_ps(nextWeights, randoms);
+		nextWeights = _mm512_mask_mov_ps(nextWeights, tabuMask, minusOne);
+		tabuMask = _mm512_int2mask(tabu[i + 1]);
+		maxLocStep(curWeights, curIndices, nextWeights, nextIndices);
+		//runningIndex = _mm512_add_ps(runningIndex, delta16);
+	}
+	// now reduce the elements of curWeights
+#define VECTOR_REDUCTION
+#ifdef VECTOR_REDUCTION
+	__m512 reduced = ReduceMax(curWeights, curIndices);
+	__declspec(align(64)) float finalIndices[16];
+	_mm512_store_ps(finalIndices, reduced);
+	return (int)finalIndices[0];
+#else
+	// serial reduction
+	__declspec(align(64)) float finalWeights[16];
+	__declspec(align(64)) float finalIndices[16];
+
+	_mm512_store_ps(finalWeights, curWeights);
+	_mm512_store_ps(finalIndices, curIndices);
+	float maxWeight = 0.0f;
+	int indexMax = 0;
+	for (int i = 0; i < 16; i++)
+	{
+		if (finalWeights[i] > maxWeight)
+		{
+			maxWeight = finalWeights[i];
+			indexMax = (int)finalIndices[i];
+		}
+	}
+	return indexMax;
+#endif
 }
 
-inline __m512 Ant::avxRandom( void )
+void Ant::seedAvxRandom(int *seeds)
 {
+	__declspec(align(64)) unsigned int c0[16] = { 1664525L, 1664525L, 1664525L, 1664525L, 1664525L, 1664525L, 1664525L, 1664525L,1664525L, 1664525L, 1664525L, 1664525L, 1664525L, 1664525L, 1664525L, 1664525L };
+	__declspec(align(64)) unsigned int c1[16] = { 1013904223L, 1013904223L, 1013904223L, 1013904223L, 1013904223L, 	1013904223L, 1013904223L, 1013904223L,1013904223L, 1013904223L, 1013904223L, 1013904223L, 1013904223L, 1013904223L, 1013904223L, 1013904223L };
+	__declspec(align(64)) float factors[16] = { 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f,2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f };
+
+	rC0 = _mm512_load_epi32(&c0); //m512i
+	rC1 = _mm512_load_epi32(&c1); //m512i
+	factor = _mm512_load_ps(factors);
+
+}
+
+#define USE_IMCI 0
+
+inline __m512 Ant::avxRandom(void)
+{
+#if USE_IMCI
 	// use AVX fused multiply-add to iterate RNG
-	rSeed = _mm512_fmadd_epi32( rC0, rSeed, rC1 );
+	rSeed = _mm512_fmadd_epi32(rC0, rSeed, rC1);
 	// convert to float in range 0 to 1 and return
-	return _mm512_cvtfxpnt_round_adjustepu32_ps( rSeed, _MM_FROUND_TO_NEAREST_INT, _MM_EXPADJ_32 );
+	return _mm512_cvtfxpnt_round_adjustepu32_ps(rSeed, _MM_FROUND_TO_NEAREST_INT, _MM_EXPADJ_32);
+#else
+
+	// AVX has no integer fused multiply-addm use mul + add
+	rSeed = _mm512_mullo_epi32(rC0, rSeed);
+	rSeed = _mm512_add_epi32(rC1, rSeed);
+
+	// convert to float in range 0 to 1 and return
+	__m512 returnValue = _mm512_cvt_roundepu32_ps(rSeed, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC);
+
+	return _mm512_mul_ps(returnValue, factor);
+#endif
 }
 
 void Ant::ConstructTour( void )

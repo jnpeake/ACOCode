@@ -29,7 +29,6 @@ int main( int argc, char *argv[] )
 
   AntSystem *as = new AntSystem();
 
-  
   int seed = 12345;
 
   //determines seed, if specified

@@ -29,6 +29,7 @@ public:
 	__m512i rSeed;
 	__m512i rC0;
 	__m512i rC1;
+	__m512 factor;
 	__m512 ones; // constant
 #else
 	unsigned int rSeed[16];

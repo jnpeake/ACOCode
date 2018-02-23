@@ -34,6 +34,7 @@ public:
 	{
 		numTimers = nTimers;
 		timers = new double[numTimers];
+		memset(timers, 0, numTimers*sizeof(double));
 #ifdef _WIN32
 		LARGE_INTEGER freq;
 		QueryPerformanceFrequency(&freq);

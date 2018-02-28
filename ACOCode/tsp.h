@@ -413,14 +413,17 @@ public:
 		//nnList is a pointer-to-pointer-to-int array of numVerts * 4
 		//nnList = (int **)malloc( numVerts * sizeof(int*) );
 		neighbourVectors = (nearestNeighbour**)malloc(numVerts * sizeof(nearestNeighbour**));
-		
-		
+
+
 		for ( i = 0; i < numVerts; i++ )
 		{
 			//each entry in nnList is a pointer-to-int array of numNN * 4
 			//nnList is filled with 20 nearest neighbours of each city
 			//nnList[i] = (int*)malloc( numNN * sizeof( int ) );
-			FillNNList( i );
+			
+  			FillNNList( i );
+  			
+			
 		}
 
 		

@@ -239,6 +239,7 @@ int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnL
 	{	
 		if(nnList[i].vectIndex != -1)
 		{
+		
 		__mmask16 tabuMask = _mm512_int2mask(tabu[nnList[i].vectIndex]);
 		__mmask16 nnMask = _mm512_int2mask(nnList[i].nnMask);
 		__m512 nextWeights = _mm512_mask_load_ps(minusOne, nnMask, weights + nnList[i].vectIndex *16);
@@ -251,6 +252,13 @@ int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnL
 		nextIndices = _mm512_add_ps( nextIndices, baseIndex );
 		maxLocStep(curWeights, curIndices, nextWeights, nextIndices);
 		}
+
+		else
+		{
+			break;
+		}
+
+
 	}
 	// now reduce the elements of curWeights
 #define VECTOR_REDUCTION

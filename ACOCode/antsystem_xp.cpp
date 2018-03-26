@@ -84,12 +84,50 @@ void AntSystem::Init( int nAnts, TSP *tsp, int seed )
 	Clear();
 }
 
+int AntSystem::CalcNNTour (int *tour)
+{
+	float aDist = 0.0f;
+	int i, j;
+	for ( i = 0; i < m_pTSP->numVerts-1; i++ )
+		{
+			float nearD = 1e20f;
+			int nearI;
+			for ( j = i+1; j < m_pTSP->numVerts; j++ )
+			{
+				//if the distance between edge i and edge j is less than near D, nearD is set to the distance and nearI becomes j
+				if ( m_pTSP->edgeDist[tour[i]][tour[j]] < nearD )
+				{
+					nearD = m_pTSP->edgeDist[tour[i]][tour[j]];
+					nearI = j;
+				}
+			}
+			// add distance and swap new index into tour
+			aDist += nearD;
+
+			int swap = tour[i+1];
+			tour[i+1] = tour[nearI];
+			tour[nearI] = swap;
+		}
+
+		//the distance between the last two vertices is added to aDist, as well as the distance between the last and first vertex
+		aDist += m_pTSP->edgeDist[tour[m_pTSP->numVerts-2]][tour[m_pTSP->numVerts-1]];
+		aDist += m_pTSP->edgeDist[tour[0]][tour[m_pTSP->numVerts-1]];
+
+		float sanityCheck = 0.0f;
+		for ( i = 0; i < m_pTSP->numVerts; i++ )
+		{
+			int i0 = tour[i];
+
+			int i1 = tour[(i+1)%m_pTSP->numVerts];
+			//printf("\n SANITY CHECK i1: %d", i1);
+			sanityCheck += m_pTSP->edgeDist[i0][i1];
+		}
+}
+
+
 void AntSystem::Clear( void )
 {
-	//timers are reset
 	timers->Clear();
-	
-	//shortest dist is initially set as a very large number
 	m_shortestDist = 1e20f;
 
 	float aDist = 0.0f;
@@ -97,21 +135,17 @@ void AntSystem::Clear( void )
 	float val;
 
 	int *tour = (int*)malloc(m_pTSP->numVerts * sizeof(int));
-
-	//sets each step of the tour to i
 	for ( i = 0; i < m_pTSP->numVerts; i++ )
 	{
 		tour[i] = i;
 	}
 
-	//calculates the nnTour distance
 	for ( i = 0; i < m_pTSP->numVerts-1; i++ )
 	{
 		float nearD = 1e20f;
 		int nearI;
 		for ( j = i+1; j < m_pTSP->numVerts; j++ )
 		{
-			//if the distance between edge i and edge j is less than near D, nearD is set to the distance and nearI becomes j
 			if ( m_pTSP->edgeDist[tour[i]][tour[j]] < nearD )
 			{
 				nearD = m_pTSP->edgeDist[tour[i]][tour[j]];
@@ -119,33 +153,23 @@ void AntSystem::Clear( void )
 			}
 		}
 		// add distance and swap new index into tour
-		aDist += nearD;
-
+		aDist += nearD; 
 	    int swap = tour[i+1];
 		tour[i+1] = tour[nearI];
 		tour[nearI] = swap;
 	}
-
-	//the distance between the last two vertices is added to aDist, as well as the distance between the last and first vertex
 	aDist += m_pTSP->edgeDist[tour[m_pTSP->numVerts-2]][tour[m_pTSP->numVerts-1]];
 	aDist += m_pTSP->edgeDist[tour[0]][tour[m_pTSP->numVerts-1]];
-
 	float sanityCheck = 0.0f;
 	for ( i = 0; i < m_pTSP->numVerts; i++ )
 	{
 		int i0 = tour[i];
-
 		int i1 = tour[(i+1)%m_pTSP->numVerts];
-		//printf("\n SANITY CHECK i1: %d", i1);
 		sanityCheck += m_pTSP->edgeDist[i0][i1];
 	}
 	//memcpy( m_shortestTour, tour, m_pTSP->numVerts * sizeof( int ) );
 	//m_shortestDist = aDist;
-
-	//tour is de-allocated
 	free(tour);
-
-	//initial pheremone level is determined by nnTour
 
 	val = 1.0f/((float)aDist*rho);
 	//printf("\nnnTour: %f Initial pheromone: %f\n",aDist,val);
@@ -182,9 +206,8 @@ void AntSystem::Clear( void )
 
 			//inverse square of edge distances
 			m_iDistSq[i][j] = 1.0f/(m_pTSP->edgeDist[i][j]*m_pTSP->edgeDist[i][j]);
-
 			//pheromone / edgeDist^2
-			m_weights[i][j] = m_pher[i][j]/(m_pTSP->edgeDist[i][j]*m_pTSP->edgeDist[i][j]);
+			m_weights[i][j] = (m_pher[i][j]/(m_pTSP->edgeDist[i][j]*m_pTSP->edgeDist[i][j]))*1000;
 #ifndef VANILLA
 
 			//weight = (weight) * (1 + (1000*m_fNN)) - makes nearest neighbour edges 1000x more likely to be picked
@@ -234,8 +257,9 @@ void AntSystem::DoTours( void )
 	for ( int i = 0; i < m_nAnts; i++ )
 	{
 		m_pAnts[i].ConstructTour();
+		//printf("tour constructed");
 	}
-
+	
 
 	//checks the ants for the shortest tour distance
 	for ( int i = 0; i < m_nAnts; i++ )
@@ -450,7 +474,7 @@ void AntSystem::Iterate( void )
 
 void AntSystem::Solve( int maxIterations, int maxStagnantIterations, bool continueStagnant )
 {
-
+	printf("%d",maxIterations);
 	//performs an initial clear of the any system
 	Clear();
 	float shortestSoFar = 1e20f;
@@ -464,6 +488,7 @@ void AntSystem::Solve( int maxIterations, int maxStagnantIterations, bool contin
 	//loop will continue until the max number of iterations are reached
 	for ( i = 0; i < maxIterations && !(stagnated && !continueStagnant); i++ )
 	{
+		printf("\n%d",i);
 		Iterate();
 #ifdef EMULATE
 		/*if (i % 20 == 0)

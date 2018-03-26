@@ -33,6 +33,7 @@ public:
 	float stagnationLambda;
 	float stagnationTourLength;
 	void DoTours( void );
+	int CalcNNTour ( int *tour );
 	void DepositFromTour( int *tour, float tourLength );
 	void Deposit( void );
 	void Evaporate( void );

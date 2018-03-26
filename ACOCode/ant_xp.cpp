@@ -1,6 +1,8 @@
 #include "ant_xp.h"
 #include "antsystem_xp.h"
 #include "tsp.h"
+#include "antsystemhelp.h"
+#include <cstdio> 
 
 void Ant::Init( AntSystem *as, int *seeds )
 {
@@ -166,7 +168,6 @@ inline __m512 ReduceMax( __m512 valvec, __m512 ivec )
 int Ant::iRoulette( float *weights, int *tabu, int nWeights )
 {
 
-
 	__declspec(align(64)) float indexSeed[16] = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 
 												 8.0f, 9.0f, 10.0f, 11.0f, 12.0f, 13.0f, 14.0f, 15.0f};
 	__declspec(align(64)) float indexStep[16] = { 16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f,
@@ -186,9 +187,11 @@ int Ant::iRoulette( float *weights, int *tabu, int nWeights )
 		__m512 nextWeights = _mm512_load_ps( weights + i*16);
 		__m512 nextIndices =  runningIndex;
 		__m512 randoms = avxRandom();
-
+		//printVectorMM512Decimal(randoms);fflush(stdout);
+		//printVectorMM512Decimal(nextWeights);fflush(stdout);
 		nextWeights = _mm512_mul_ps( nextWeights, randoms );
 		nextWeights = _mm512_mask_mov_ps( nextWeights, tabuMask, minusOne );
+
 		tabuMask = _mm512_int2mask( tabu[i+1] );
 		maxLocStep( curWeights, curIndices, nextWeights, nextIndices );
 		runningIndex = _mm512_add_ps( runningIndex, delta16 );
@@ -225,7 +228,8 @@ int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnL
 {
 	//printf("Using csRoulette");
 	__declspec(align(64)) float indexSeed[16] = { 0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f,
-		8.0f, 9.0f, 10.0f, 11.0f, 12.0f, 13.0f, 14.0f, 15.0f };
+		8.0f, 9.0f, 10.0f, 11.0f, 12.0f, 13.0f, 14.0f, 15.
+ };
 	__declspec(align(64)) float minusOnes[16] = { -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f,
 		-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f };
 
@@ -239,14 +243,17 @@ int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnL
 	{	
 		if(nnList[i].vectIndex != -1)
 		{
-		
+		__m512 randoms = avxRandom();
+		//printVectorMM512Decimal(randoms);fflush(stdout);
+		__m512 nextIndices;		
 		__mmask16 tabuMask = _mm512_int2mask(tabu[nnList[i].vectIndex]);
 		__mmask16 nnMask = _mm512_int2mask(nnList[i].nnMask);
-		__m512 nextWeights = _mm512_mask_load_ps(minusOne, nnMask, weights + nnList[i].vectIndex *16);
-		nextWeights = _mm512_mask_mov_ps(nextWeights, tabuMask, minusOne);
+
 		
-		__m512 randoms = avxRandom();
-		__m512 nextIndices;
+		__m512 nextWeights = _mm512_mask_load_ps(minusOne, nnMask, weights + nnList[i].vectIndex *16);
+		nextWeights = _mm512_mul_ps( nextWeights, randoms );
+		nextWeights = _mm512_mask_mov_ps(nextWeights, tabuMask, minusOne);
+
 		float offset = 16*nnList[i].vectIndex;
 		nextIndices = _mm512_set1_ps(offset);
 		nextIndices = _mm512_add_ps( nextIndices, baseIndex );
@@ -260,6 +267,7 @@ int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnL
 
 
 	}
+	
 	// now reduce the elements of curWeights
 #define VECTOR_REDUCTION
 #ifdef VECTOR_REDUCTION
@@ -293,7 +301,7 @@ void Ant::seedAvxRandom(int *seeds)
 	__declspec(align(64)) unsigned int c0[16] = { 1664525L, 1664525L, 1664525L, 1664525L, 1664525L, 1664525L, 1664525L, 1664525L,1664525L, 1664525L, 1664525L, 1664525L, 1664525L, 1664525L, 1664525L, 1664525L };
 	__declspec(align(64)) unsigned int c1[16] = { 1013904223L, 1013904223L, 1013904223L, 1013904223L, 1013904223L, 	1013904223L, 1013904223L, 1013904223L,1013904223L, 1013904223L, 1013904223L, 1013904223L, 1013904223L, 1013904223L, 1013904223L, 1013904223L };
 	__declspec(align(64)) float factors[16] = { 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f,2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f };
-
+	rSeed = _mm512_load_epi32( seeds );
 	rC0 = _mm512_load_epi32(&c0); //m512i
 	rC1 = _mm512_load_epi32(&c1); //m512i
 	factor = _mm512_load_ps(factors);
@@ -314,7 +322,6 @@ inline __m512 Ant::avxRandom(void)
 	// AVX has no integer fused multiply-addm use mul + add
 	rSeed = _mm512_mullo_epi32(rC0, rSeed);
 	rSeed = _mm512_add_epi32(rC1, rSeed);
-
 	// convert to float in range 0 to 1 and return
 	__m512 returnValue = _mm512_cvt_roundepu32_ps(rSeed, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC);
 
@@ -329,9 +336,10 @@ void Ant::ConstructTour( void )
 	tourDist = 0.0f;
 	nTour = 0;
 	TSP *tsp = m_as->GetTSP();
-	int numNN = m_as->GetTSP()->numNN;
+	int numNN = tsp->numNN;
 	// zero the tabu list
 	memset( tabu, 0, nVert16*sizeof(int));
+	
 
 	// pick a random start city
 	__m512 randoms = avxRandom();
@@ -345,6 +353,14 @@ void Ant::ConstructTour( void )
 	int iTabu = (iLast/16);
 	int jTabu = iLast%16;
 	tabu[iTabu] |= (1<<jTabu);
+	if(nVert16 != tsp->numVerts)
+	{
+		for(int i = tsp->numVerts; i < nVert16; i++)
+		{
+			int jTabu = i%16;
+			tabu[i/16] |= (1<<jTabu);
+		}
+	}
 	for ( i = 1; i < tsp->numVerts; i++ )
 	{
 #pragma noinline
@@ -352,17 +368,25 @@ void Ant::ConstructTour( void )
 		tour[i] = vRoulette( m_as->m_weights[tour[i-1]], tabu, nVert16 );
 #else
 		tour[i] = csRoulette(m_as->m_weights[tour[i - 1]], tabu, nVert16, tsp->neighbourVectors[tour[i - 1]], numNN);
+		
 		if (tour[i] == -1)
 		{
-			
 			tour[i] = iRoulette(m_as->m_weights[tour[i - 1]], tabu, nVert16/*, tsp->neighbourVectors[tour[i-1]]*/);
 		}
+		else if(tour[i] < 0 || tour[i] > tsp->numVerts-1)
+		{
+			printf("hello %d\n",tour[i]);fflush(stdout);
+		}
 #endif
+		
 		int iTabu = (tour[i]/16);
 		int jTabu = tour[i]%16;
+		//printf("\n%d",iTabu);fflush(stdout);
 		tabu[iTabu] |= (1<<jTabu);
+		//printf("\n%d, %d, %d",i,tour[i],tour[i-1]);fflush(stdout);
 		tourDist += tsp->edgeDist[tour[i]][tour[i-1]];
-	}	
+	}
+
 	tourDist += tsp->edgeDist[tour[0]][tour[tsp->numVerts-1]];
 }
 

@@ -45,9 +45,11 @@ class TSP
 {
 public:
 	float **edgeDist;
+	float **edgeDistNew;
 	int numVerts;
 	int **nnList;
 	int numNN;
+	int nnHist[32] = {};
 	nearestNeighbour **neighbourVectors;
 	nearestNeighbour *newNN;
 	
@@ -103,6 +105,80 @@ public:
 		free( tempList );
 	}
 	*/
+
+	float** CalcNNTour()
+	{
+		float aDist = 0.0f;
+		int i, j;
+		int *tour = (int*)malloc(numVerts * sizeof(int));
+
+		//sets each step of the tour to i
+		for ( i = 0; i < numVerts; i++ )
+		{
+			tour[i] = i;
+		}
+		for ( i = 0; i < numVerts-1; i++ )
+			{
+				float nearD = 1e20f;
+				int nearI;
+				for ( j = i+1; j < numVerts; j++ )
+				{
+					//if the distance between edge i and edge j is less than near D, nearD is set to the distance and nearI becomes j
+					if ( edgeDist[tour[i]][tour[j]] < nearD )
+					{
+						nearD = edgeDist[tour[i]][tour[j]];
+						nearI = j;
+					}
+				}
+				// add distance and swap new index into tour
+				aDist += nearD;
+
+				int swap = tour[i+1];
+				tour[i+1] = tour[nearI];
+				tour[nearI] = swap;
+			}
+
+			//the distance between the last two vertices is added to aDist, as well as the distance between the last and first vertex
+			aDist += edgeDist[tour[numVerts-2]][tour[numVerts-1]];
+			aDist += edgeDist[tour[0]][tour[numVerts-1]];
+
+			float sanityCheck = 0.0f;
+			for ( i = 0; i < numVerts; i++ )
+			{
+				int i0 = tour[i];
+
+				int i1 = tour[(i+1)%numVerts];
+				//printf("\n SANITY CHECK i1: %d", i1);
+				sanityCheck += edgeDist[i0][i1];
+			}
+			
+			edgeDistNew = (float**)malloc( numVerts * sizeof( float* ) );
+			for ( i = 0; i < numVerts; i++ )
+				edgeDistNew[i] = (float*)malloc( numVerts * sizeof( float ) );
+
+			for (i = 0; i < numVerts-1; i++)
+			{
+				for(j = i; j < numVerts- 1; j++)
+				{ 
+					if(i == j)
+					{
+						edgeDistNew[i][j] = 0;
+					}
+					else
+					{
+						edgeDistNew[i][j] = edgeDist[tour[i]][tour[j]];
+					}	
+				}
+
+				for(j = 0; j < i; j++)
+				{
+					edgeDistNew[i][j] = edgeDist[tour[i]][tour[j]];
+				}
+
+			}
+			
+			return edgeDistNew;
+	}
 	
 	void FillNNList(int iList)
 	{
@@ -135,8 +211,8 @@ public:
 				}
 			}
 			qsort(tempList, numVerts - 1, sizeof(distSort), nnComp);
-
-		
+			
+			
 			
 			int count2 = 0;
 			/////now we have the sorted list - time to find the index of the matrices in the pheromone matrix
@@ -171,6 +247,8 @@ public:
 			// fill the remainder of the list with -1 (sentinel value)
 			for (int i = count2; i < numNN; i++)
 				newNN[i].vectIndex = -1;
+
+			nnHist[count2]++;
 #else
 			for (int i = 0; i < numNN; i++)
 			{
@@ -438,6 +516,10 @@ public:
 		// don't need the vertex positions any more
 		free( vertX );
 		free( vertY );
+		//printf("\n%f",edgeDist[1][2]);
+		//edgeDist = CalcNNTour();
+		//printf("\n%f",edgeDist[1][2]);
+
 		// initialize the nearest neighbour lists
 		//numNN is set to the number of nearest neighbours passed into the program as a parameter
 		numNN = nNearNeighbours;
@@ -457,6 +539,13 @@ public:
   			
 			
 		}
+
+		/*for(int j = 0; j < 32; j++)
+		{
+			printf("%d ",nnHist[j]);
+		}
+		printf("\n");*/
+
 
 		
 	}

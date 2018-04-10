@@ -21,7 +21,6 @@ int main( int argc, char *argv[] )
   //creates edge matrix and NN list
   tsp->Init( argv[1], nNeighbours );
   
-  //return 0;
   int nIter;
   int nAnts;
   //determines the number of iterations

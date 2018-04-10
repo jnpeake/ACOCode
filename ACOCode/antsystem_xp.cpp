@@ -474,7 +474,7 @@ void AntSystem::Iterate( void )
 
 void AntSystem::Solve( int maxIterations, int maxStagnantIterations, bool continueStagnant )
 {
-	printf("%d",maxIterations);
+
 	//performs an initial clear of the any system
 	Clear();
 	float shortestSoFar = 1e20f;
@@ -488,7 +488,6 @@ void AntSystem::Solve( int maxIterations, int maxStagnantIterations, bool contin
 	//loop will continue until the max number of iterations are reached
 	for ( i = 0; i < maxIterations && !(stagnated && !continueStagnant); i++ )
 	{
-		printf("\n%d",i);
 		Iterate();
 #ifdef EMULATE
 		/*if (i % 20 == 0)

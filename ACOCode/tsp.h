@@ -156,9 +156,9 @@ public:
 			for ( i = 0; i < numVerts; i++ )
 				edgeDistNew[i] = (float*)malloc( numVerts * sizeof( float ) );
 
-			for (i = 0; i < numVerts-1; i++)
+			for (i = 0; i < numVerts; i++)
 			{
-				for(j = i; j < numVerts- 1; j++)
+				for(j = 0; j < numVerts; j++)
 				{ 
 					if(i == j)
 					{
@@ -168,11 +168,6 @@ public:
 					{
 						edgeDistNew[i][j] = edgeDist[tour[i]][tour[j]];
 					}	
-				}
-
-				for(j = 0; j < i; j++)
-				{
-					edgeDistNew[i][j] = edgeDist[tour[i]][tour[j]];
 				}
 
 			}

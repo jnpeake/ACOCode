@@ -4,6 +4,7 @@
 #include "platform.h"
 #include "tsp.h"
 #include "list"
+#include "vector.h"
 #ifndef EMULATE
 #include <immintrin.h>
 #endif
@@ -26,11 +27,11 @@ public:
 
 	// random number generator data
 #ifndef EMULATE
-	__m512i rSeed;
-	__m512i rC0;
-	__m512i rC1;
-	__m512 factor;
-	__m512 ones; // constant
+	Vector rSeed;
+	Vector rC0;
+	Vector rC1;
+	Vector factor;
+	Vector ones; // constant
 #else
 	unsigned int rSeed[16];
 #endif

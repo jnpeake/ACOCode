@@ -84,45 +84,6 @@ void AntSystem::Init( int nAnts, TSP *tsp, int seed )
 	Clear();
 }
 
-int AntSystem::CalcNNTour (int *tour)
-{
-	float aDist = 0.0f;
-	int i, j;
-	for ( i = 0; i < m_pTSP->numVerts-1; i++ )
-		{
-			float nearD = 1e20f;
-			int nearI;
-			for ( j = i+1; j < m_pTSP->numVerts; j++ )
-			{
-				//if the distance between edge i and edge j is less than near D, nearD is set to the distance and nearI becomes j
-				if ( m_pTSP->edgeDist[tour[i]][tour[j]] < nearD )
-				{
-					nearD = m_pTSP->edgeDist[tour[i]][tour[j]];
-					nearI = j;
-				}
-			}
-			// add distance and swap new index into tour
-			aDist += nearD;
-
-			int swap = tour[i+1];
-			tour[i+1] = tour[nearI];
-			tour[nearI] = swap;
-		}
-
-		//the distance between the last two vertices is added to aDist, as well as the distance between the last and first vertex
-		aDist += m_pTSP->edgeDist[tour[m_pTSP->numVerts-2]][tour[m_pTSP->numVerts-1]];
-		aDist += m_pTSP->edgeDist[tour[0]][tour[m_pTSP->numVerts-1]];
-
-		float sanityCheck = 0.0f;
-		for ( i = 0; i < m_pTSP->numVerts; i++ )
-		{
-			int i0 = tour[i];
-
-			int i1 = tour[(i+1)%m_pTSP->numVerts];
-			//printf("\n SANITY CHECK i1: %d", i1);
-			sanityCheck += m_pTSP->edgeDist[i0][i1];
-		}
-}
 
 
 void AntSystem::Clear( void )
@@ -172,7 +133,7 @@ void AntSystem::Clear( void )
 	free(tour);
 
 	val = 1.0f/((float)aDist*rho);
-	//printf("\nnnTour: %f Initial pheromone: %f\n",aDist,val);
+	printf("\nnnTour: %f Initial pheromone: %f\n",aDist,val);
 
 
 	//from 0 to numVerts
@@ -490,11 +451,11 @@ void AntSystem::Solve( int maxIterations, int maxStagnantIterations, bool contin
 	{
 		Iterate();
 #ifdef EMULATE
-		/*if (i % 20 == 0)
+		if (i % 20 == 0)
 		{
 			printf("\nIteration: %d, Shortest Distance: %f, Timers: %f %f", i, m_shortestDist, timers->GetTimer(0), timers->GetTimer(1));
 			printf("\nFallback: %d, Used NN: %d",fallbackCount,usingNNCount);
-		}*/
+		}
 		
 #endif
 		if ( m_shortestDist < shortestSoFar )

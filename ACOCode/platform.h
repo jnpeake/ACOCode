@@ -1,7 +1,7 @@
 #ifndef _PLATFORM_INC_
 #define _PLATFORM_INC_
 
-//#define EMULATE
+#define EMULATE
 //#define USE_VROULETTE
 
 #ifndef EMULATE

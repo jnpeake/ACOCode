@@ -1,7 +1,6 @@
 #include "ant_xp.h"
 #include "antsystem_xp.h"
 #include "tsp.h"
-#include "antsystemhelp.h"
 #include <cstdio> 
 
 void Ant::Init( AntSystem *as, int *seeds )
@@ -32,7 +31,7 @@ void Ant::Init( AntSystem *as, int *seeds )
 	// handy constant
 #ifndef EMULATE
 	float f1 = 1.0f;
-	ones = _mm512_extload_ps( &f1, _MM_UPCONV_PS_NONE, _MM_BROADCAST_1X16, 0 );
+	ones.extload(f1);
 #endif
 }
 
@@ -131,15 +130,16 @@ int Ant::vRoulette( float *weights, int *tabu, int nWeights )
 	return (int)finalIndices[0];
 }
 
+/*
 inline __m512 ReduceMax( __m512 valvec, __m512 ivec )
 {
 	// return a vector with all elements equal to ivec[imax] where
 	// valvec[imax] is largest element of valvec
-	__m512 permVal;
-	__m512 permInd;
-	__mmask16 maxMask;
+	Vector permVal;
+	Vector permInd;
+	Vector maxMask;
 	// swap with neighbour 
-	permVal = _mm512_swizzle_ps( valvec, _MM_SWIZ_REG_CDAB );
+	permVal = ( valvec, _MM_SWIZ_REG_CDAB );
 	permInd = _mm512_swizzle_ps( ivec, _MM_SWIZ_REG_CDAB );
 	maxMask = _mm512_cmp_ps_mask( valvec, permVal, _MM_CMPINT_GT );
 	valvec = _mm512_mask_mov_ps( permVal, maxMask, valvec );
@@ -165,6 +165,7 @@ inline __m512 ReduceMax( __m512 valvec, __m512 ivec )
 	return ivec;
 
 }
+*/
 int Ant::iRoulette( float *weights, int *tabu, int nWeights )
 {
 
@@ -175,34 +176,37 @@ int Ant::iRoulette( float *weights, int *tabu, int nWeights )
 	__declspec(align(64)) float minusOnes[16] = { -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f,
 												  -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f };
 
-	__m512 minusOne = _mm512_load_ps( minusOnes );
-	__m512 runningIndex = _mm512_load_ps( indexSeed );
-	__m512 delta16 = _mm512_load_ps( indexStep );
-	__m512 curIndices = minusOne;
-	__m512 curWeights = minusOne;
- 	__mmask16 tabuMask = _mm512_int2mask( tabu[0] );
+	Vector minusOne;
+	minusOne.load(minusOnes);
+	Vector runningIndex;
+	runningIndex.load(indexSeed);
+	Vector delta16;
+	delta16.load( indexStep );
+	Vector curIndices = minusOne;
+	Vector curWeights = minusOne;
+ 	Vector tabuMask = int2mask( tabu[0] );
 
 	for ( int i = 0; i < nWeights/16; i++ )
 	{
-		__m512 nextWeights = _mm512_load_ps( weights + i*16);
-		__m512 nextIndices =  runningIndex;
-		__m512 randoms = avxRandom();
+		Vector nextWeights;
+		nextWeights.load(weights + i * 16);
+		Vector nextIndices =  runningIndex;
+		Vector randoms = random(seeds);
 		//printVectorMM512Decimal(randoms);fflush(stdout);
 		//printVectorMM512Decimal(nextWeights);fflush(stdout);
-		nextWeights = _mm512_mul_ps( nextWeights, randoms );
-		nextWeights = _mm512_mask_mov_ps( nextWeights, tabuMask, minusOne );
+		nextWeights = nextWeights * randoms;
+		nextWeights = mask_mov( nextWeights, tabuMask, minusOne );
 
-		tabuMask = _mm512_int2mask( tabu[i+1] );
+		tabuMask = int2mask( tabu[i+1] );
 		maxLocStep( curWeights, curIndices, nextWeights, nextIndices );
-		runningIndex = _mm512_add_ps( runningIndex, delta16 );
+		runningIndex = runningIndex + delta16 ;
 	}
 	// now reduce the elements of curWeights
 #define VECTOR_REDUCTION
 #ifdef VECTOR_REDUCTION
-	__m512 reduced = ReduceMax( curWeights, curIndices );
+	int reduced = ReduceMax( curWeights, curIndices );
 	__declspec(align(64)) float finalIndices[16];
-	_mm512_store_ps( finalIndices, reduced );
-	return (int)finalIndices[0];
+	return reduced;
 #else
 	// serial reduction
 	__declspec(align(64)) float finalWeights[16];
@@ -646,7 +650,6 @@ int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnL
 
 	//int tabuMask = tabu[0];
 
-	printf("\n  nWeights: %d", nVerts);
 	//fills curIndices, curWeights arrays with 0s runningIndex arrays with i
 	for (i = 0; i < 16; i++)
 	{

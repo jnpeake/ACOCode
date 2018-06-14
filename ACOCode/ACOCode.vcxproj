@@ -162,6 +162,7 @@
     <ClInclude Include="timers.h" />
     <ClInclude Include="tsp.h" />
     <ClInclude Include="vec2.h" />
+    <ClInclude Include="vector.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="a280.tsp" />

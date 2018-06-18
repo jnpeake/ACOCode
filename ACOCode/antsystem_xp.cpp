@@ -270,18 +270,9 @@ void AntSystem::Deposit( void )
 			iBest = i;
 		}
 	}
-//	if ( (++count)%25 == 0 )
-//	{
-//		count = 0;
-		DepositFromTour( m_pAnts[iBest].tour, dBest );
-//	}
-//	else
-//	{
-//		DepositFromTour( m_shortestTour, m_shortestDist );
-//	}
-	// calculate the max and min pheromone values here
 
-#ifndef EMULATE
+		DepositFromTour( m_pAnts[iBest].tour, dBest );
+
 	__declspec(align(64)) float pherMin;
 	__declspec(align(64)) float pherMax;
 	__declspec(align(64)) float evapFac = (1.0f - rho);
@@ -291,11 +282,12 @@ void AntSystem::Deposit( void )
 	pherMax = 1.0f/(rho * m_shortestDist );
 	pherMin = pherMax * mmasConst;
 
-	__m512 vPherMin = _mm512_extload_ps( &pherMin, _MM_UPCONV_PS_NONE, _MM_BROADCAST_1X16, 0 );
-	__m512 vPherMax = _mm512_extload_ps( &pherMax, _MM_UPCONV_PS_NONE, _MM_BROADCAST_1X16, 0 );
-	__m512 vEvap =  _mm512_extload_ps( &evapFac, _MM_UPCONV_PS_NONE, _MM_BROADCAST_1X16, 0 );
-	__m512 vOnes = _mm512_extload_ps( &one, _MM_UPCONV_PS_NONE, _MM_BROADCAST_1X16, 0 );
-	__m512 vNNMult = _mm512_extload_ps( &nnMult, _MM_UPCONV_PS_NONE, _MM_BROADCAST_1X16, 0 );
+	Vector vEvap;
+	vEvap.extload(evapFac);
+	Vector vOnes;
+	vOnes.extload(one);
+	Vector vNNMult;
+	vNNMult.extload(nnMult);
 
 
 	// precompute the probability into, and enforce min and max pheromone levels for MMAS
@@ -304,80 +296,33 @@ void AntSystem::Deposit( void )
 #endif
 	for ( int i = 0; i < m_pTSP->numVerts; i++ )
 	{
-
  		for ( int j = 0; j < m_pTSP->numVerts; j+=16 )
 		{
-			__m512 pher = _mm512_load_ps( m_pher[i]+j );
-			__m512 weights = _mm512_load_ps( m_weights[i]+j );
-			__m512 iDist = _mm512_load_ps( m_iDistSq[i]+j );
-			__m512 nnFac = _mm512_load_ps( m_fNN[i]+j );
+			
+			Vector pher;
+			pher.load(m_pher[i] + j);
+
+			Vector weights;
+			weights.load(m_weights[i] + j);
+
+			Vector iDist;
+			iDist.load(m_iDistSq[i] + j);
+
+			Vector nnFac;
+			nnFac.load(m_fNN[i] + j);
 
 			// evaporate
-			pher = _mm512_mul_ps( pher, vEvap );
+			pher = pher * vEvap;
 			// MMAS - clamp pheromone between limits
-			pher = _mm512_max_ps( pher, vPherMin );
-			pher = _mm512_min_ps( pher, vPherMax );
+			pher.vecMax(pherMin);
+			pher.vecMin(pherMax);
 
-			weights = _mm512_mul_ps( pher, iDist );
-			// apply nearest neighbour correction to weights
-			nnFac = _mm512_mul_ps( nnFac, vNNMult );
-			nnFac = _mm512_add_ps( nnFac, vOnes );
-			weights = _mm512_mul_ps( weights, nnFac );
+			weights = pher * iDist;
 
-			_mm512_store_ps( m_pher[i]+j, pher );
-			_mm512_store_ps( m_weights[i]+j, weights );
+			store(m_pher[i] + j, pher);
+		    store(m_weights[i] + j, weights);
 		}
 	}
-#else
-	float pherMin;
-	float pherMax;
-	float evapFac = (1.0f - rho);
-	float one = 1.0f;
-	float nnMult = 999.0f; // nearest-neighbour boost factor minus 1
-
-	pherMax = 1.0f/(rho * m_shortestDist );
-	pherMin = pherMax * mmasConst;
-
-	float pher[16];
-	float weights[16];
-	float iDist[16];
-	float nnFac[16];
-
-#ifdef USE_OMP
-#pragma omp parallel for
-#endif
-
-	//PHEROMONE EVAPORATION
-
-	//loops through the vertices
-	for ( int i = 0; i < m_pTSP->numVerts; i++ )
-	{
-		//loops through every 16th vertex
- 		for ( int j = 0; j < m_pTSP->numVerts; j+=16 )
-		{
-			memcpy(pher, m_pher[i]+j, 16*sizeof(float) );
-			memcpy(weights, m_weights[i]+j, 16*sizeof(float) );
-			memcpy(iDist,  m_iDistSq[i]+j, 16*sizeof(float) );
-			memcpy(nnFac,  m_fNN[i]+j, 16*sizeof(float) );
-
-			for ( int k = 0; k < 16; k++ )
-			{
-				pher[k] = pher[k] * evapFac;
-				pher[k] = fmax( pher[k], pherMin );
-				pher[k] = fmin( pher[k], pherMax );
-				
-				weights[k] = pher[k] * iDist[k];
-#ifndef VANILLA
-				nnFac[k] = nnFac[k] * nnMult;
-				nnFac[k] += 1.0f;
-				weights[k] *= nnFac[k];
-#endif
-			}
-			memcpy( m_pher[i]+j, pher, 16*sizeof(float) );
-			memcpy( m_weights[i]+j, weights, 16*sizeof(float) );
-		}
-	}
-#endif
 }
 void AntSystem::CalcStagnationMetrics( void )
 {
@@ -450,14 +395,12 @@ void AntSystem::Solve( int maxIterations, int maxStagnantIterations, bool contin
 	for ( i = 0; i < maxIterations && !(stagnated && !continueStagnant); i++ )
 	{
 		Iterate();
-#ifdef EMULATE
-		if (i % 20 == 0)
+		if (i % 2 == 0)
 		{
 			printf("\nIteration: %d, Shortest Distance: %f, Timers: %f %f", i, m_shortestDist, timers->GetTimer(0), timers->GetTimer(1));
-			printf("\nFallback: %d, Used NN: %d",fallbackCount,usingNNCount);
 		}
 		
-#endif
+
 		if ( m_shortestDist < shortestSoFar )
 		{
 			shortestSoFar = m_shortestDist;

@@ -33,7 +33,6 @@ public:
 	float stagnationLambda;
 	float stagnationTourLength;
 	void DoTours( void );
-	int CalcNNTour ( int *tour );
 	void DepositFromTour( int *tour, float tourLength );
 	void Deposit( void );
 	void Evaporate( void );
@@ -42,10 +41,10 @@ public:
 
 //protected:
 	// pheromone information
-	float **m_pher;     // pheromone value
-	float **m_weights;  // edge weights
-	float **m_iDistSq;  // precalculated inverse square of edge distances
-	float **m_fNN;		// nearest neighbour flags
+	float (**m_pher);     // pheromone value
+	float (**m_weights);  // edge weights
+	float (**m_iDistSq);  // precalculated inverse square of edge distances
+	float (**m_fNN);		// nearest neighbour flags
 
 //public:
 	void Init( int nAnts, TSP *tsp, int seed );

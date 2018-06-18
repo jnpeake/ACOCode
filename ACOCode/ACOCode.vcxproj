@@ -148,6 +148,7 @@
     <ClCompile Include="antmain.cpp" />
     <ClCompile Include="antsystem_xp.cpp" />
     <ClCompile Include="ant_xp.cpp" />
+    <ClCompile Include="vector.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="antsystem_xp.h" />

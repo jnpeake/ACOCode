@@ -7,16 +7,25 @@ class Vector
 {
 public:
 	float values[16];
+	int vectorSize = 16;
 	Vector operator+(const Vector& v) const
 	{
 #ifdef _WIN32
 		Vector vector;
-		for (int i = 0; i < 16; i++)
+		for (int i = 0; i < vectorSize; i++)
 		{
 			vector.values[i] = this->values[i] + v.values[i];
 		}
 
 		return vector;
+#endif
+
+#ifdef AVX512
+		_mm512_add_ps(this->values[i] + v.values[i]);
+#endif
+
+#ifdef AVX2
+
 #endif
 	}
 
@@ -25,12 +34,19 @@ public:
 #ifdef _WIN32
 
 		Vector vector;
-		for (int i = 0; i < 16; i++)
+		for (int i = 0; i < vectorSize; i++)
 		{
 			vector.values[i] = (this->values[i] - v.values[i]);
 		}
 
 		return vector;
+#endif
+#ifdef AVX512
+		_mm512_sub_ps(this->values[i] + v.values[i]);
+#endif
+
+#ifdef AVX2
+
 #endif
 	}
 
@@ -39,12 +55,19 @@ public:
 #ifdef _WIN32
 
 		Vector vector;
-		for (int i = 0; i < 16; i++)
+		for (int i = 0; i < vectorSize; i++)
 		{
 			vector.values[i] = (this->values[i] * v.values[i]);
 		}
 
 		return vector;
+#endif
+#ifdef AVX512
+		_mm512_mul_ps(this->values[i] + v.values[i]);
+#endif
+
+#ifdef AVX2
+
 #endif
 	}
 
@@ -54,10 +77,17 @@ public:
 	{
 #ifdef _WIN32
 
-		for (int i = 0; i < 16; i++)
+		for (int i = 0; i < vectorSize; i++)
 		{
 			this->values[i] = (value);
 		}
+#endif
+#ifdef AVX512
+		this->values[i] = _mm512_extload_ps(value, _MM_UPCONV_PS_NONE, _MM_BROADCAST_1X16, 0);
+#endif
+
+#ifdef AVX2
+
 #endif
 	}
 
@@ -65,7 +95,7 @@ public:
 	{
 #ifdef _WIN32
 
-		for (int i = 0; i < 16; i++)
+		for (int i = 0; i < vectorSize; i++)
 		{
 			if (this->values[i] < maxVal)
 			{
@@ -73,19 +103,33 @@ public:
 			}
 		}
 #endif
+#ifdef AVX512
+		this->values[i] = _mm512_max_ps(this->values[i], maxVal)
+#endif
+
+#ifdef AVX2
+
+#endif
 	}
 
 	void vecMin(float minVal)
 	{
 #ifdef _WIN32
 
-		for (int i = 0; i < 16; i++)
+		for (int i = 0; i < vectorSize; i++)
 		{
 			if (this->values[i] > minVal)
 			{
 				this->values[i] = minVal;
 			}
 		}
+#endif
+#ifdef AVX512
+		this->values[i] = _mm512_max_ps(this->values[i], minval)
+#endif
+
+#ifdef AVX2
+
 #endif
 	}
 
@@ -94,10 +138,17 @@ public:
 	{
 #ifdef _WIN32
 
-		for (int i = 0; i < 16; i++)
+		for (int i = 0; i < vectorSize; i++)
 		{
 			this->values[i] = setValue;
 		}
+#endif
+#ifdef AVX512
+		this->values[i] = _mm512_set1_ps(setValue);
+#endif
+
+#ifdef AVX2
+
 #endif
 	}
 
@@ -106,7 +157,7 @@ public:
 	{
 #ifdef _WIN32
 
-		for (int i = 0; i < 16; i++)
+		for (int i = 0; i < vectorSize; i++)
 		{
 
 				this->values[i] = source[i];
@@ -114,16 +165,30 @@ public:
 
 		}
 #endif
+#ifdef AVX512
+		this->values[i] = _mm512_load_ps(source);
+#endif
+
+#ifdef AVX2
+
+#endif
 	}
 
 	void load(int* source)
 	{
 #ifdef _WIN32
 
-		for (int i = 0; i < 16; i++)
+		for (int i = 0; i < vectorSize; i++)
 		{
 			this->values[i] = source[i];
 		}
+#endif
+#ifdef AVX512
+		this->values[i] = _mm512_load_epi32(source);
+#endif
+
+#ifdef AVX2
+
 #endif
 	}
 
@@ -131,10 +196,17 @@ public:
 	{
 #ifdef _WIN32
 
-		for (int i = 0; i < 16; i++)
+		for (int i = 0; i < vectorSize; i++)
 		{
 			this->values[i] = source[i];
 		}
+#endif
+#ifdef AVX512
+		this->values[i] = _mm512_load_epi32(source);
+#endif
+
+#ifdef AVX2
+
 #endif
 	}
 
@@ -142,7 +214,7 @@ public:
 	{
 #ifdef _WIN32
 
-		for (int i = 0; i < 16; i++)
+		for (int i = 0; i < vectorSize; i++)
 		{
 			if (mask.values[i] == 1)
 				this->values[i] = mem_addr[i];
@@ -150,6 +222,13 @@ public:
 			else
 				this->values[i] = src.values[i];
 		}
+#endif
+#ifdef AVX512
+		_mm512_mask_load_ps(src, mask, mem_addr);
+#endif
+
+#ifdef AVX2
+
 #endif
 	}
 

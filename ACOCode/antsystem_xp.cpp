@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <omp.h>
+#include <cstdio> 
+#include <iostream>
 
 #ifndef EMULATE
 #include <immintrin.h>
@@ -277,17 +279,16 @@ void AntSystem::Deposit( void )
 	__declspec(align(64)) float pherMax;
 	__declspec(align(64)) float evapFac = (1.0f - rho);
 	__declspec(align(64)) float one = 1.0f;
-	__declspec(align(64)) float nnMult = 999.0f; // nearest-neighbour boost factor minus 1
+
 
 	pherMax = 1.0f/(rho * m_shortestDist );
 	pherMin = pherMax * mmasConst;
 
 	Vector vEvap;
-	vEvap.extload(evapFac);
+	vEvap.set1(evapFac);
 	Vector vOnes;
-	vOnes.extload(one);
-	Vector vNNMult;
-	vNNMult.extload(nnMult);
+	vOnes.set1(one);
+
 
 
 	// precompute the probability into, and enforce min and max pheromone levels for MMAS
@@ -301,6 +302,7 @@ void AntSystem::Deposit( void )
 			
 			Vector pher;
 			pher.load(m_pher[i] + j);
+			
 
 			Vector weights;
 			weights.load(m_weights[i] + j);
@@ -314,9 +316,10 @@ void AntSystem::Deposit( void )
 			// evaporate
 			pher = pher * vEvap;
 			// MMAS - clamp pheromone between limits
-			pher.vecMax(pherMin);
-			pher.vecMin(pherMax);
-
+			
+			pher.vecMax(pherMax);
+			pher.vecMin(pherMin);
+			
 			weights = pher * iDist;
 
 			store(m_pher[i] + j, pher);
@@ -395,7 +398,8 @@ void AntSystem::Solve( int maxIterations, int maxStagnantIterations, bool contin
 	for ( i = 0; i < maxIterations && !(stagnated && !continueStagnant); i++ )
 	{
 		Iterate();
-		if (i % 2 == 0)
+		
+		if (1)//i % 200 == 0)
 		{
 			printf("\nIteration: %d, Shortest Distance: %f, Timers: %f %f", i, m_shortestDist, timers->GetTimer(0), timers->GetTimer(1));
 		}

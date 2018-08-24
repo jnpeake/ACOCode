@@ -1,13 +1,15 @@
+#pragma once
+
 #ifndef _ANT_INC_
 #define _ANT_INC_
 
+#include "vector.h"
 #include "platform.h"
 #include "tsp.h"
 #include "list"
-#include "vector.h"
 
 
-//#define USE_VROULETTE
+class Vector; // forward declaration
 
 class AntSystem; // forward declaration
 
@@ -26,7 +28,7 @@ public:
 
 	// random number generator data
 
-	unsigned int rSeed[16];
+	Vector rSeed;
 	Vector rC0;
 	Vector rC1;
 	Vector factor;

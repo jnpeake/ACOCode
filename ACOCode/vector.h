@@ -1,27 +1,36 @@
 #pragma once
 
-#include <vector>
+#include <immintrin.h>
+#include <cstdio> 
 
+#define SISD
 
 class Vector
 {
 public:
+#ifdef SISD
 	float values[16];
+	int iValues[16];
 	int vectorSize = 16;
+#elif defined AVX512
+	__m512 AVXVec;
+	__m512i AVXIntVec;
+	__mmask16 maskVec;
+#endif
 	Vector operator+(const Vector& v) const
 	{
-#ifdef _WIN32
 		Vector vector;
+#ifdef SISD
+
 		for (int i = 0; i < vectorSize; i++)
 		{
 			vector.values[i] = this->values[i] + v.values[i];
 		}
 
 		return vector;
-#endif
-
-#ifdef AVX512
-		_mm512_add_ps(this->values[i] + v.values[i]);
+#elif defined AVX512
+		vector.AVXVec = _mm512_add_ps(this->AVXVec, v.AVXVec);
+		return vector;
 #endif
 
 #ifdef AVX2
@@ -31,7 +40,7 @@ public:
 
 	Vector operator-(const Vector& v) const
 	{
-#ifdef _WIN32
+#ifdef SISD
 
 		Vector vector;
 		for (int i = 0; i < vectorSize; i++)
@@ -40,9 +49,8 @@ public:
 		}
 
 		return vector;
-#endif
-#ifdef AVX512
-		_mm512_sub_ps(this->values[i] + v.values[i]);
+#elif defined AVX512
+		_mm512_sub_ps(this->AVXVec, v.AVXVec);
 #endif
 
 #ifdef AVX2
@@ -52,18 +60,17 @@ public:
 
 	Vector operator*(const Vector& v) const
 	{
-#ifdef _WIN32
-
-		Vector vector;
+	Vector vector;
+#ifdef SISD	
 		for (int i = 0; i < vectorSize; i++)
 		{
 			vector.values[i] = (this->values[i] * v.values[i]);
 		}
 
 		return vector;
-#endif
-#ifdef AVX512
-		_mm512_mul_ps(this->values[i] + v.values[i]);
+#elif defined AVX512
+		vector.AVXVec = _mm512_mul_ps(this->AVXVec, v.AVXVec);
+		return vector;
 #endif
 
 #ifdef AVX2
@@ -73,17 +80,16 @@ public:
 
 
 
-	void extload(float value)
+	void extload(float* value)
 	{
-#ifdef _WIN32
+#ifdef SISD
 
 		for (int i = 0; i < vectorSize; i++)
 		{
-			this->values[i] = (value);
+			this->values[i] = value[0];
 		}
-#endif
-#ifdef AVX512
-		this->values[i] = _mm512_extload_ps(value, _MM_UPCONV_PS_NONE, _MM_BROADCAST_1X16, 0);
+#elif defined AVX512
+		this->AVXVec = _mm512_extload_ps(value, _MM_UPCONV_PS_NONE, _MM_BROADCAST_1X16, 0);
 #endif
 
 #ifdef AVX2
@@ -93,39 +99,38 @@ public:
 
 	void vecMax(float maxVal)
 	{
-#ifdef _WIN32
+#ifdef SISD
 
 		for (int i = 0; i < vectorSize; i++)
 		{
-			if (this->values[i] < maxVal)
+			if (this->values[i] > maxVal)
 			{
 				this->values[i] = maxVal;
 			}
 		}
-#endif
-#ifdef AVX512
-		this->values[i] = _mm512_max_ps(this->values[i], maxVal)
+#elif defined AVX512
+		__declspec(align(64)) float maxValAr[16] ={maxVal,maxVal,maxVal,maxVal,maxVal,maxVal,maxVal,maxVal,maxVal,maxVal,maxVal,maxVal,maxVal,maxVal,maxVal,maxVal};
+		__m512 maxValVec = _mm512_load_ps(maxValAr);
+		this->AVXVec = _mm512_max_ps(this->AVXVec, maxValVec);
 #endif
 
-#ifdef AVX2
-
-#endif
 	}
 
 	void vecMin(float minVal)
 	{
-#ifdef _WIN32
+#ifdef SISD
 
 		for (int i = 0; i < vectorSize; i++)
 		{
-			if (this->values[i] > minVal)
+			if (this->values[i] < minVal)
 			{
 				this->values[i] = minVal;
 			}
 		}
-#endif
-#ifdef AVX512
-		this->values[i] = _mm512_max_ps(this->values[i], minval)
+#elif defined AVX512
+		__declspec(align(64)) float minValAr[16] ={minVal,minVal,minVal,minVal,minVal,minVal,minVal,minVal,minVal,minVal,minVal,minVal,minVal,minVal,minVal,minVal};
+		__m512 minValVec = _mm512_load_ps(minValAr);
+		this->AVXVec = _mm512_max_ps(this->AVXVec, minValVec);
 #endif
 
 #ifdef AVX2
@@ -136,15 +141,14 @@ public:
 
 	void set1(float setValue)
 	{
-#ifdef _WIN32
+#ifdef SISD
 
 		for (int i = 0; i < vectorSize; i++)
 		{
 			this->values[i] = setValue;
 		}
-#endif
-#ifdef AVX512
-		this->values[i] = _mm512_set1_ps(setValue);
+#elif defined AVX512
+		this->AVXVec = _mm512_set1_ps(setValue);
 #endif
 
 #ifdef AVX2
@@ -155,7 +159,7 @@ public:
 
 	void load(float* source)
 	{
-#ifdef _WIN32
+#ifdef SISD
 
 		for (int i = 0; i < vectorSize; i++)
 		{
@@ -164,9 +168,8 @@ public:
 
 
 		}
-#endif
-#ifdef AVX512
-		this->values[i] = _mm512_load_ps(source);
+#elif defined AVX512
+		this->AVXVec = _mm512_load_ps(source);
 #endif
 
 #ifdef AVX2
@@ -176,15 +179,14 @@ public:
 
 	void load(int* source)
 	{
-#ifdef _WIN32
+#ifdef SISD
 
 		for (int i = 0; i < vectorSize; i++)
 		{
 			this->values[i] = source[i];
 		}
-#endif
-#ifdef AVX512
-		this->values[i] = _mm512_load_epi32(source);
+#elif defined AVX512
+		this->AVXIntVec = _mm512_load_epi32(source);
 #endif
 
 #ifdef AVX2
@@ -194,15 +196,14 @@ public:
 
 	void load(unsigned int * source)
 	{
-#ifdef _WIN32
+#ifdef SISD
 
 		for (int i = 0; i < vectorSize; i++)
 		{
 			this->values[i] = source[i];
 		}
-#endif
-#ifdef AVX512
-		this->values[i] = _mm512_load_epi32(source);
+#elif defined AVX512
+		this->AVXIntVec = _mm512_load_epi32(source);
 #endif
 
 #ifdef AVX2
@@ -210,9 +211,9 @@ public:
 #endif
 	}
 
-	void maskLoad(Vector src, Vector mask, float* mem_addr)
+	void maskLoad(Vector &src, Vector mask, float* mem_addr)
 	{
-#ifdef _WIN32
+#ifdef SISD
 
 		for (int i = 0; i < vectorSize; i++)
 		{
@@ -222,9 +223,8 @@ public:
 			else
 				this->values[i] = src.values[i];
 		}
-#endif
-#ifdef AVX512
-		_mm512_mask_load_ps(src, mask, mem_addr);
+#elif defined AVX512
+		this->AVXVec = _mm512_mask_load_ps(src.AVXVec, mask.maskVec, mem_addr);
 #endif
 
 #ifdef AVX2
@@ -248,11 +248,11 @@ Vector gtMask(const Vector& v1, const Vector& v2);
 
 Vector ltMask(const Vector& v1, const Vector& v2);
 
-Vector vecRandom(unsigned int* rSeed);
+Vector vecRandom(Vector rC0, Vector rC1, Vector factors, Vector rSeed);
 
-void seedVecRandom(int* seeds, unsigned int* rSeed);
+void seedVecRandom(Vector& rC0, Vector& rC1, Vector& factors, int *seeds, Vector& rSeed);
 
-void maxLocStep(Vector &oldWeights, Vector &oldIndices, Vector &newWeights, Vector &newIndices);
+void maxLocStep(Vector &oldWeights, Vector &oldIndices, Vector newWeights, Vector newIndices);
 int reduceMax(Vector curWeights, Vector curIndices);
 
 void store(float* loc, Vector v1);

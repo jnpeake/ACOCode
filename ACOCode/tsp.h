@@ -52,59 +52,8 @@ public:
 	int nnHist[32] = {};
 	nearestNeighbour **neighbourVectors;
 	nearestNeighbour *newNN;
-	
-	// nn list
-	/*
-
-	;
-	nearestNeighbour *newNN;
-
-	std::list<nearestNeighbour> nList;
-	nList.push_back()
-		for (nearestNeighbour item : nList)
-		{
-
-		}
-	auto iter = nList.begin();
-	while (iter != nList.end())
-	{
-		// item is *iter
-		iter++;
-	}
-*/
 	int (*distanceFunc)(float, float, float, float);
 	
-	/*
-	void FillNNList( int iList )
-	{
-		//*tempList is a distSort array of size numverts-1 * 8
-		//distSort is a struct declared earlier, with two parameters:
-		//float dist;
-		//int index;
-		printf("\n Size of distSort %d ", sizeof(distSort));
-		distSort *tempList = (distSort*)malloc( (numVerts-1) * sizeof( distSort ) );
-		int count = 0;
-		for ( int i = 0; i < numVerts; i++ )
-		{
-			//checks if i matches the iList parameter, which itself is the iterating value of another for loop
-			//if false, adds a distSort struct to the array with the index i and a dist value of the value at i, iList of the edgeDist
-			if ( i != iList )
-			{
-				tempList[count].index = i;
-				tempList[count].dist = edgeDist[i][iList];
-				//printf("\n Temp List %d data: Index: %d Dist: %f", count, i, edgeDist[i][iList]);
-				count++;
-			}
-		}
-		qsort( tempList, numVerts-1, sizeof(distSort), nnComp );
-		for ( int i = 0; i < numNN; i++ )
-		{
-			//printf("\n Adding value %d to nnList at position %d,%d", tempList[i].index, iList, i);
-			nnList[iList][i] = tempList[i].index;
-		}
-		free( tempList );
-	}
-	*/
 
 	float** CalcNNTour()
 	{
@@ -176,125 +125,122 @@ public:
 	}
 	
 	void FillNNList(int iList)
-	{
+	{	
+		//*tempList is a distSort array of size numverts-1 * 8
+		//distSort is a struct declared earlier, with two parameters:
+		//float dist;
+		//int index;
+		//printf("\n Size of distSort %d ", sizeof(distSort));
+		nearestNeighbour *newNN = (nearestNeighbour*)malloc(numNN * sizeof(nearestNeighbour));
+		distSort *tempList = (distSort*)malloc((numVerts - 1) * sizeof(distSort));
+		int count = 0;
+		for (int i = 0; i < numVerts; i++)
+		{
+			//checks if i matches the iList parameter, which itself is the iterating value of another for loop
+			//if false, adds a distSort struct to the array with the index i and a dist value of the value at i, iList of the edgeDist
 
-			
-			//emulated code
-
-			//*tempList is a distSort array of size numverts-1 * 8
-			//distSort is a struct declared earlier, with two parameters:
-			//float dist;
-			//int index;
-			//printf("\n Size of distSort %d ", sizeof(distSort));
-			nearestNeighbour *newNN = (nearestNeighbour*)malloc(numNN * sizeof(nearestNeighbour));
-			distSort *tempList = (distSort*)malloc((numVerts - 1) * sizeof(distSort));
-			int count = 0;
-			for (int i = 0; i < numVerts; i++)
+			//the purpose of this for loop is to get the list of weights for the vertex at iList - stay the same as default
+			if (i != iList)
 			{
-				//checks if i matches the iList parameter, which itself is the iterating value of another for loop
-				//if false, adds a distSort struct to the array with the index i and a dist value of the value at i, iList of the edgeDist
+					
+				tempList[count].index = i;
+				tempList[count].dist = edgeDist[i][iList];
+				//printf("\n Temp List %d data: Index: %d Dist: %f", count, i, edgeDist[i][iList]);
+				count++;
+					
+			}
+		}
+		qsort(tempList, numVerts - 1, sizeof(distSort), nnComp);
+		
+		
+		
+		int count2 = 0;
+		/////now we have the sorted list - time to find the index of the matrices in the pheromone matrix
+ // HL 5/3/18 - suggested improvement (this should be quicker) 
+		for (int i = 0; i < numNN; i++)
+		{
 
-				//the purpose of this for loop is to get the list of weights for the vertex at iList - stay the same as default
-				if (i != iList)
+			int vectIndex = tempList[i].index / 16;
+			int indexInVec = tempList[i].index % 16;
+			int found = -1;
+			// check to see if we already have an entry for this vector
+			for (int j = 0; j < count2; j++)
+			{
+				if (vectIndex == newNN[j].vectIndex)
 				{
-						
-					tempList[count].index = i;
-					tempList[count].dist = edgeDist[i][iList];
-					//printf("\n Temp List %d data: Index: %d Dist: %f", count, i, edgeDist[i][iList]);
-					count++;
-						
+					found = j;
+					break;
 				}
 			}
-			qsort(tempList, numVerts - 1, sizeof(distSort), nnComp);
-			
-			
-			
-			int count2 = 0;
-			/////now we have the sorted list - time to find the index of the matrices in the pheromone matrix
-#if 1 // HL 5/3/18 - suggested improvement (this should be quicker) 
-			for (int i = 0; i < numNN; i++)
+			if (found != -1)
 			{
-				int vectIndex = tempList[i].index / 16;
-				int indexInVec = tempList[i].index % 16;
-				int found = -1;
-				// check to see if we already have an entry for this vector
-				for (int j = 0; j < count2; j++)
-				{
-					if (vectIndex == newNN[j].vectIndex)
-					{
-						found = j;
-						break;
-					}
-				}
-				if (found != -1)
-				{
-					// update the existing entry
-					newNN[found].nnMask |= (1UL << indexInVec);
-				}
-				else
-				{
-					// create a new entry
-					newNN[count2].vectIndex = vectIndex;
-					newNN[count2].nnMask = (1UL << indexInVec);
-					count2++;
-				}
+				// update the existing entry
+				newNN[found].nnMask |= (1UL << indexInVec);
 			}
-			// fill the remainder of the list with -1 (sentinel value)
-			for (int i = count2; i < numNN; i++)
-				newNN[i].vectIndex = -1;
-
-			nnHist[count2]++;
-#else
-			for (int i = 0; i < numNN; i++)
+			else
 			{
-
-				if (tempList[i].index != -1)
-				{
-					nearestNeighbour _nn;
-					_nn.nnMask = 0;
-					_nn.vectIndex = tempList[i].index / 16;
-					int remainder = tempList[i].index % 16;
-					_nn.nnMask |=  1UL << remainder;
-					tempList[i].index = -1;
-					for (int j = 0; j < numNN; j++)
-					{
-						if (tempList[j].index / 16 == _nn.vectIndex && tempList[j].index != -1)
-						{
-							
-							int remainder = tempList[j].index % 16;
-							_nn.nnMask |= 1UL << remainder;
-							tempList[j].index = -1;
-						}
-					}		
-					//_nn.nnMask = (1 << _nn.nnMask) - 1;
-					newNN[count2] = _nn;
-					count2++;
-
-					//printf("\n INDEX: %d \n", _nn.vectIndex);
-					for (int j = 0; j < 16; j++)
-					{
-						//printf(" %d",mask[j]);	
-					}
-				}
-
-				//printf("\n%d",i);
-				
-				//printf("\n Adding value %d to nnList at position %d,%d", tempList[i].index, iList, i);
-				//nnList[iList][i] = tempList[i].index;
-			}
-
-			for (int i = count2; i < numNN; i++)
-			{
-				nearestNeighbour _nn;
-				_nn.nnMask = NULL;
-				_nn.vectIndex = -1;
-				newNN[count2] = _nn;
+				// create a new entry
+				newNN[count2].vectIndex = vectIndex;
+				newNN[count2].nnMask = (1UL << indexInVec);
 				count2++;
 			}
-#endif
-			free(tempList);
-			neighbourVectors[iList] = newNN;
-			//free(newNN);
+		}
+		// fill the remainder of the list with -1 (sentinel value)
+		for (int i = count2; i < numNN; i++)
+			newNN[i].vectIndex = -1;
+
+/*
+#else
+		for (int i = 0; i < numNN; i++)
+		{
+
+			if (tempList[i].index != -1)
+			{
+				nearestNeighbour _nn;
+				_nn.nnMask = 0;
+				_nn.vectIndex = tempList[i].index / 16;
+				int remainder = tempList[i].index % 16;
+				_nn.nnMask |=  1UL << remainder;
+				tempList[i].index = -1;
+				for (int j = 0; j < numNN; j++)
+				{
+					if (tempList[j].index / 16 == _nn.vectIndex && tempList[j].index != -1)
+					{
+						
+						int remainder = tempList[j].index % 16;
+						_nn.nnMask |= 1UL << remainder;
+						tempList[j].index = -1;
+					}
+				}		
+				//_nn.nnMask = (1 << _nn.nnMask) - 1;
+				newNN[count2] = _nn;
+				count2++;
+
+				//printf("\n INDEX: %d \n", _nn.vectIndex);
+				for (int j = 0; j < 16; j++)
+				{
+					//printf(" %d",mask[j]);	
+				}
+			}
+
+			//printf("\n%d",i);
+			
+			//printf("\n Adding value %d to nnList at position %d,%d", tempList[i].index, iList, i);
+			//nnList[iList][i] = tempList[i].index;
+		}
+
+		for (int i = count2; i < numNN; i++)
+		{
+			nearestNeighbour _nn;
+			_nn.nnMask = NULL;
+			_nn.vectIndex = -1;
+			newNN[count2] = _nn;
+			count2++;
+		}*/
+
+		free(tempList);
+		neighbourVectors[iList] = newNN;
+		//free(newNN);
 	}
 
 	
@@ -512,7 +458,7 @@ public:
 		free( vertX );
 		free( vertY );
 		//printf("\n%f",edgeDist[1][2]);
-		//edgeDist = CalcNNTour();
+		edgeDist = CalcNNTour();
 		//printf("\n%f",edgeDist[1][2]);
 
 		// initialize the nearest neighbour lists

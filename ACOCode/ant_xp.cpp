@@ -2,13 +2,12 @@
 #include "antsystem_xp.h"
 #include "tsp.h"
 #include <cstdio> 
+#include <cstdlib>
+#include <iostream>
 
 void Ant::Init( AntSystem *as, int *seeds )
 {
-	for (int i = 0; i < 16; i++)
-	{
-		randSeeds[i] = seeds[i];
-	}
+
 	m_as = as;
 	remaining = (int*)ALLOC( (m_as->GetTSP()->numVerts * sizeof(int)) );
 	tour = (int*)ALLOC( (m_as->GetTSP()->numVerts * sizeof(int)) );
@@ -29,11 +28,11 @@ void Ant::Init( AntSystem *as, int *seeds )
 		index[i] = (float)i;
 
 	// intialize the RNG
-	seedVecRandom( seeds, rSeed );
 
+	seedVecRandom(rC0,rC1,factor,seeds,rSeed);
 	// handy constant
 	float f1 = 1.0f;
-	ones.extload(f1);
+	ones.set1(f1);
 }
 
 int Ant::iRoulette( float *weights, int *tabu, int nWeights )
@@ -55,15 +54,13 @@ int Ant::iRoulette( float *weights, int *tabu, int nWeights )
 	Vector curIndices = minusOne;
 	Vector curWeights = minusOne;
  	Vector tabuMask = int2mask( tabu[0] );
-
 	for ( int i = 0; i < nWeights/16; i++ )
 	{
 		Vector nextWeights;
 		nextWeights.load(weights + i * 16);
 		Vector nextIndices =  runningIndex;
-		Vector randoms = vecRandom(rSeed);
-		//printVectorMM512Decimal(randoms);fflush(stdout);
-		//printVectorMM512Decimal(nextWeights);fflush(stdout);
+		Vector randoms = vecRandom(rC0,rC1,factor,rSeed);
+		
 		nextWeights = nextWeights * randoms;
 		nextWeights = mask_mov( nextWeights, tabuMask, minusOne );
 
@@ -73,13 +70,11 @@ int Ant::iRoulette( float *weights, int *tabu, int nWeights )
 	}
 	// now reduce the elements of curWeights
 	int reduced = reduceMax( curWeights, curIndices );
-
 	return reduced;
 }
 
 int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnList, int numNN)
 {
-	//printf("Using csRoulette");
 	__declspec(align(64)) float indexSeed[16] = { 0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f,
 		8.0f, 9.0f, 10.0f, 11.0f, 12.0f, 13.0f, 14.0f, 15.0f};
 	__declspec(align(64)) float minusOnes[16] = { -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f,
@@ -91,42 +86,46 @@ int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnL
 	baseIndex.load(indexSeed);
 	Vector curIndices = minusOne;
 	Vector curWeights = minusOne;
-	
 
 	for(int i = 0; i < numNN; i++)
 	{	
+
 		if(nnList[i].vectIndex != -1)
 		{
-		Vector randoms = vecRandom(rSeed);
-		//printVectorMM512Decimal(randoms);fflush(stdout);
-		Vector nextIndices;		
-		Vector tabuMask = int2mask(tabu[nnList[i].vectIndex]);
-		Vector nnMask = int2mask(nnList[i].nnMask);
 
+			Vector randoms = vecRandom(rC0,rC1,factor,rSeed);
+			Vector nextIndices;		
+			Vector tabuMask = int2mask(tabu[nnList[i].vectIndex]);
+			Vector nnMask = int2mask(nnList[i].nnMask);
 
 		
-		Vector nextWeights;
-		nextWeights.maskLoad(minusOne, nnMask, weights + nnList[i].vectIndex *16);
-		nextWeights = nextWeights * randoms;
-		nextWeights = mask_mov(nextWeights, tabuMask, minusOne);
+			Vector nextWeights;
+			nextWeights.maskLoad(minusOne, nnMask, weights + nnList[i].vectIndex *16);
+			nextWeights = nextWeights * randoms;
+			nextWeights = mask_mov(nextWeights, tabuMask, minusOne);
 
-		float offset = 16*nnList[i].vectIndex;
-		nextIndices.set1(offset);
-		nextIndices =  nextIndices + baseIndex;
-		
-		maxLocStep(curWeights, curIndices, nextWeights, nextIndices);
+			float offset = 16*nnList[i].vectIndex;
+			nextIndices.set1(offset);
+			nextIndices =  nextIndices + baseIndex;
+
+			maxLocStep(curWeights, curIndices, nextWeights, nextIndices);
+
 		}
 
 		else
 		{
+
 			break;
 		}
+
+
 
 
 	}
 	
 	// now reduce the elements of curWeights
 	int reduced = reduceMax(curWeights, curIndices);
+
 
 	if (reduced < 0) {
 		reduced = -1;
@@ -148,7 +147,7 @@ void Ant::ConstructTour( void )
 	// zero the tabu list
 	memset( tabu, 0, nVert16*sizeof(int));
 	// pick a random start city
-	Vector randoms = vecRandom(rSeed);
+	Vector randoms = vecRandom(rC0,rC1,factor,rSeed);
 	__declspec(align(64)) float r[16];
 	store(r, randoms);
 	int iLast = tsp->numVerts * r[0]; 

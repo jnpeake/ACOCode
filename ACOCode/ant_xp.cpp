@@ -118,9 +118,6 @@ int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnL
 			break;
 		}
 
-
-
-
 	}
 	
 	// now reduce the elements of curWeights

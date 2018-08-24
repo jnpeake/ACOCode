@@ -10,7 +10,7 @@ class Vector
 public:
 #ifdef SISD
 	float values[16];
-	int iValues[16];
+	unsigned int iValues[16];
 	int vectorSize = 16;
 #elif defined AVX512
 	__m512 AVXVec;

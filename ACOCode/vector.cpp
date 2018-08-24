@@ -105,8 +105,7 @@ Vector vecRandom(Vector rC0, Vector rC1, Vector factor, Vector rSeed)
 	{
 		
 		rSeed.iValues[i] = rSeed.iValues[i] * 1664525L + 1013904223L;
-		r.iValues[i] = rSeed.iValues[i] * 2.328306437087974e-10;
-		
+		r.values[i] = (float)rSeed.iValues[i] * 2.328306437087974e-10;
 	}
 
 	return r;
@@ -130,6 +129,8 @@ void seedVecRandom(Vector& rC0, Vector& rC1, Vector& factor, int *seeds, Vector&
 	{
 		rSeed.iValues[i] = seeds[i];
 	}
+
+
 #elif defined AVX512
 		__declspec(align(64)) unsigned int c0[16] = { 1664525L, 1664525L, 1664525L, 1664525L, 1664525L, 1664525L, 1664525L, 1664525L,1664525L, 1664525L, 1664525L, 1664525L, 1664525L, 1664525L, 1664525L, 1664525L };
 	__declspec(align(64)) unsigned int c1[16] = { 1013904223L, 1013904223L, 1013904223L, 1013904223L, 1013904223L, 	1013904223L, 1013904223L, 1013904223L,1013904223L, 1013904223L, 1013904223L, 1013904223L, 1013904223L, 1013904223L, 1013904223L, 1013904223L };
@@ -222,6 +223,7 @@ void store(float* loc, Vector v1)
 	{
 		loc[i] = v1.values[i];
 	}
+	
 #elif defined AVX512
 	_mm512_store_ps(loc, v1.AVXVec);
 #endif

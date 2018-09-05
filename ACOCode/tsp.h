@@ -156,6 +156,7 @@ public:
 		
 		int count2 = 0;
 		/////now we have the sorted list - time to find the index of the matrices in the pheromone matrix
+/*
  // HL 5/3/18 - suggested improvement (this should be quicker) 
 		for (int i = 0; i < numNN; i++)
 		{
@@ -188,9 +189,7 @@ public:
 		// fill the remainder of the list with -1 (sentinel value)
 		for (int i = count2; i < numNN; i++)
 			newNN[i].vectIndex = -1;
-
-/*
-#else
+*/
 		for (int i = 0; i < numNN; i++)
 		{
 
@@ -236,7 +235,7 @@ public:
 			_nn.vectIndex = -1;
 			newNN[count2] = _nn;
 			count2++;
-		}*/
+		}
 
 		free(tempList);
 		neighbourVectors[iList] = newNN;

@@ -61,6 +61,7 @@ int Ant::iRoulette( float *weights, int *tabu, int nWeights )
 		Vector nextIndices =  runningIndex;
 		Vector randoms = vecRandom(rC0,rC1,factor,rSeed);
 		
+		
 		nextWeights = nextWeights * randoms;
 		nextWeights = mask_mov( nextWeights, tabuMask, minusOne );
 
@@ -95,38 +96,35 @@ int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnL
 
 			Vector randoms = vecRandom(rC0,rC1,factor,rSeed);
 			Vector nextIndices;		
-			Vector tabuMask = int2mask(tabu[nnList[i].vectIndex]);
+			Vector tabuMask = int2mask(tabu[nnList[i].vectIndex]);					
 			Vector nnMask = int2mask(nnList[i].nnMask);
-
 		
 			Vector nextWeights;
-			nextWeights.maskLoad(minusOne, nnMask, weights + nnList[i].vectIndex *16);
+			nextWeights.load(weights + nnList[i].vectIndex *16);
+			//nextWeights.maskLoad(minusOne, nnMask, weights + nnList[i].vectIndex *16);
 			nextWeights = nextWeights * randoms;
+			nextWeights = mask_mov(minusOne, nnMask, nextWeights);
 			nextWeights = mask_mov(nextWeights, tabuMask, minusOne);
-
+		
 			float offset = 16*nnList[i].vectIndex;
-			nextIndices.set1(offset);
+			nextIndices.set1(offset);	
 			nextIndices =  nextIndices + baseIndex;
-
 			maxLocStep(curWeights, curIndices, nextWeights, nextIndices);
 
 		}
-
 		else
 		{
 
 			break;
 		}
-
 	}
 	
 	// now reduce the elements of curWeights
 	int reduced = reduceMax(curWeights, curIndices);
-
-
 	if (reduced < 0) {
 		reduced = -1;
 	}
+	
 	return reduced;
 }
 
@@ -168,15 +166,13 @@ void Ant::ConstructTour( void )
 #pragma noinline
 
 		tour[i] = csRoulette(m_as->m_weights[tour[i - 1]], tabu, nVert16, tsp->neighbourVectors[tour[i - 1]], numNN);
+		
 		if (tour[i] == -1)
 		{
 			tour[i] = iRoulette(m_as->m_weights[tour[i - 1]], tabu, nVert16);
 		}
 		
-		else if(tour[i] < 0 || tour[i] > tsp->numVerts-1)
-		{
-			printf("hello %d\n",tour[i]);fflush(stdout);
-		}
+		
 		int iTabu = (tour[i]/16);
 		int jTabu = tour[i]%16;
 		//printf("\n%d",iTabu);fflush(stdout);
@@ -184,7 +180,6 @@ void Ant::ConstructTour( void )
 		//printf("\n%d, %d, %d",i,tour[i],tour[i-1]);fflush(stdout);
 		tourDist += tsp->edgeDist[tour[i]][tour[i-1]];
 	}
-
 	tourDist += tsp->edgeDist[tour[0]][tour[tsp->numVerts-1]];
 }
 

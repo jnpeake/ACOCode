@@ -319,7 +319,7 @@ void AntSystem::Deposit( void )
 			
 			pher.vecMax(pherMax);
 			pher.vecMin(pherMin);
-			
+				
 			weights = pher * iDist;
 
 			store(m_pher[i] + j, pher);
@@ -399,7 +399,7 @@ void AntSystem::Solve( int maxIterations, int maxStagnantIterations, bool contin
 	{
 		Iterate();
 		
-		if (1)//i % 200 == 0)
+		if (i % 100 == 0)
 		{
 			printf("\nIteration: %d, Shortest Distance: %f, Timers: %f %f", i, m_shortestDist, timers->GetTimer(0), timers->GetTimer(1));
 		}

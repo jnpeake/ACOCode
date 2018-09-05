@@ -3,7 +3,7 @@
 
 class AntSystemHelp;
 
-/*
+
 inline void printVectorMM512(__m512 vector)
 {
 	printf("Printing MM512 Vector ***************\n");
@@ -45,4 +45,4 @@ inline void printVectorMask(__mmask16 vector)
 	printf("%d ",maskInt );
 	printf("\n");
 }
-*/
+

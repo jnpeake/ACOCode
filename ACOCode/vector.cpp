@@ -2,6 +2,7 @@
 #include "antsystemhelp.h"
 #include <iostream>
 #define SISD
+//#define AVX512
 Vector int2mask(int maskInt)
 {
 #ifdef SISD
@@ -170,16 +171,16 @@ int reduceMax(Vector curWeights, Vector curIndices)
 #ifdef SISD
 
 	int highestIndex = -1;
-	float highestValue = -1;
+	float highestValue = 0;
 	for (int i = 0; i < 16; i++)
 	{
 		if (curWeights.values[i] > highestValue)
 		{
 			highestValue = curWeights.values[i];
-			highestIndex = i;
+			highestIndex = curIndices.values[i];
 		}
 	}
-	return curIndices.values[highestIndex];
+	return highestIndex;
 #elif defined AVX512
 	// return a vector with all elements equal to ivec[imax] where
 	// valvec[imax] is largest element of valvec

@@ -7,7 +7,7 @@
 #ifndef EMULATE
 #define ALLOC( _x ) _mm_malloc( (_x), 64 )
 #define FREE( _x ) _mm_free( _x )
-//#define USE_OMP
+#define USE_OMP
 #else
 #define ALLOC( _x ) malloc( (_x) )
 #define FREE( _x ) free( _x )

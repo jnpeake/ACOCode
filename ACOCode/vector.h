@@ -3,7 +3,9 @@
 #include <immintrin.h>
 #include <cstdio> 
 
+
 #define SISD
+//#define AVX512
 
 class Vector
 {
@@ -111,7 +113,7 @@ public:
 #elif defined AVX512
 		__declspec(align(64)) float maxValAr[16] ={maxVal,maxVal,maxVal,maxVal,maxVal,maxVal,maxVal,maxVal,maxVal,maxVal,maxVal,maxVal,maxVal,maxVal,maxVal,maxVal};
 		__m512 maxValVec = _mm512_load_ps(maxValAr);
-		this->AVXVec = _mm512_max_ps(this->AVXVec, maxValVec);
+		this->AVXVec = _mm512_min_ps(this->AVXVec, maxValVec);
 #endif
 
 	}

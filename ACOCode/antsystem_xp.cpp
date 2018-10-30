@@ -273,13 +273,11 @@ void AntSystem::Deposit( void )
 		}
 	}
 
-		DepositFromTour( m_pAnts[iBest].tour, dBest );
-
-	__declspec(align(64)) float pherMin;
-	__declspec(align(64)) float pherMax;
-	__declspec(align(64)) float evapFac = (1.0f - rho);
-	__declspec(align(64)) float one = 1.0f;
-
+	DepositFromTour( m_pAnts[iBest].tour, dBest );
+	ALIGN(BITS, float pherMin);
+	ALIGN(BITS, float pherMax);
+	ALIGN(BITS, float evapFac) = 1.0f - rho;
+	ALIGN(BITS, float one) = 1.0f;
 
 	pherMax = 1.0f/(rho * m_shortestDist );
 	pherMin = pherMax * mmasConst;

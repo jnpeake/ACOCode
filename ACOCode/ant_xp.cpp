@@ -38,11 +38,11 @@ void Ant::Init( AntSystem *as, int *seeds )
 int Ant::iRoulette( float *weights, int *tabu, int nWeights )
 {
 
-	__declspec(align(64)) float indexSeed[16] = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 
+	ALIGN(BITS,float indexSeed[16]) = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 
 												 8.0f, 9.0f, 10.0f, 11.0f, 12.0f, 13.0f, 14.0f, 15.0f};
-	__declspec(align(64)) float indexStep[16] = { 16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f,
+	ALIGN(BITS, float indexStep[16]) = { 16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f,
 												  16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f };
-	__declspec(align(64)) float minusOnes[16] = { -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f,
+	ALIGN(BITS, float minusOnes[16]) = { -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f,
 												  -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f };
 
 	Vector minusOne;
@@ -76,9 +76,9 @@ int Ant::iRoulette( float *weights, int *tabu, int nWeights )
 
 int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnList, int numNN)
 {
-	__declspec(align(64)) float indexSeed[16] = { 0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f,
+	ALIGN(BITS, float indexSeed[16]) = { 0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f,
 		8.0f, 9.0f, 10.0f, 11.0f, 12.0f, 13.0f, 14.0f, 15.0f};
-	__declspec(align(64)) float minusOnes[16] = { -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f,
+	ALIGN(BITS, float minusOnes[16]) = { -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f,
 		-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f };
 
 	Vector minusOne;
@@ -143,7 +143,7 @@ void Ant::ConstructTour( void )
 	memset( tabu, 0, nVert16*sizeof(int));
 	// pick a random start city
 	Vector randoms = vecRandom(rC0,rC1,factor,rSeed);
-	__declspec(align(64)) float r[16];
+	ALIGN(BITS, float r[16]);
 	store(r, randoms);
 	int iLast = tsp->numVerts * r[0]; 
 	if ( iLast == tsp->numVerts )

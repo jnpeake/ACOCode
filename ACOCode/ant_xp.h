@@ -34,15 +34,13 @@ public:
 	Vector factor;
 	Vector ones; // constant
 
-	int nVert16;
+	int nVertPadded;
 	float *index; // array of indices (0..nVerts), for iRoulette
 
-	int *tabu; // tabu list
+	short *tabu; // tabu list
 
-	void seedAvxRandom( int *seeds ); 
-
-	int iRoulette( float *weights, int *tabu, int nWeights);
-	int csRoulette(float *weights, int *tabu, int nWeights, nearestNeighbour *nnList, int numNN);
+	int iRoulette( float *weights, short *tabu, int nWeights);
+	int csRoulette(float *weights, short *tabu, int nWeights, nearestNeighbour *nnList, int numNN);
 
 
 

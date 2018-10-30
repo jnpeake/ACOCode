@@ -1,7 +1,6 @@
 #ifndef _ANTSYSTEM_INC_
 #define _ANTSYSTEM_INC_
 #include "ant_xp.h"
-#include "antsystemhelp.h"
 #include "timers.h"
 #include "tsp.h"
 #include "platform.h"

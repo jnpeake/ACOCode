@@ -9,9 +9,9 @@ class Vector
 {
 public:
 #ifdef SISD
-	float values[16];
-	int iValues[16];
-	int vectorSize = 16;
+	float values[8];
+	int iValues[8];
+	int vectorSize = 8;
 #elif defined AVX512
 	__m512 AVXVec;
 	__m512i AVXIntVec;

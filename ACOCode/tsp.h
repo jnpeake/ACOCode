@@ -14,7 +14,7 @@ typedef struct
 
 typedef struct
 {
-	int nnMask; //mask with bits set for vector lanes which contains NN
+	short nnMask; //mask with bits set for vector lanes which contains NN
 	int vectIndex = -1; //index of pheromone matrix vector which contains NNs
 } nearestNeighbour;
 
@@ -197,16 +197,16 @@ public:
 			{
 				nearestNeighbour _nn;
 				_nn.nnMask = 0;
-				_nn.vectIndex = tempList[i].index / 16;
-				int remainder = tempList[i].index % 16;
+				_nn.vectIndex = tempList[i].index / 8;
+				short remainder = tempList[i].index % 8;
 				_nn.nnMask |=  1UL << remainder;
 				tempList[i].index = -1;
 				for (int j = 0; j < numNN; j++)
 				{
-					if (tempList[j].index / 16 == _nn.vectIndex && tempList[j].index != -1)
+					if (tempList[j].index / 8 == _nn.vectIndex && tempList[j].index != -1)
 					{
 						
-						int remainder = tempList[j].index % 16;
+						short remainder = tempList[j].index % 8;
 						_nn.nnMask |= 1UL << remainder;
 						tempList[j].index = -1;
 					}
@@ -215,11 +215,6 @@ public:
 				newNN[count2] = _nn;
 				count2++;
 
-				//printf("\n INDEX: %d \n", _nn.vectIndex);
-				for (int j = 0; j < 16; j++)
-				{
-					//printf(" %d",mask[j]);	
-				}
 			}
 
 			//printf("\n%d",i);
@@ -239,6 +234,7 @@ public:
 
 		free(tempList);
 		neighbourVectors[iList] = newNN;
+		//printf("Adding to neighbourVectors");
 		//free(newNN);
 	}
 

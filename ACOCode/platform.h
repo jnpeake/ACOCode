@@ -6,6 +6,7 @@
 //#define AVX2
 #define SISD
 #define BITS 32
+#define _VECSIZE 8
 #ifndef EMULATE
 #define ALLOC( _x ) _mm_malloc( (_x), 64 )
 #define FREE( _x ) _mm_free( _x )

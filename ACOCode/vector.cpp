@@ -8,7 +8,7 @@ Vector int2mask(int maskInt) // NO AVX --------------------------
 #ifdef SISD
 
 	Vector mask;
-	for (int i = 0; i < 16; ++i) {
+	for (int i = 0; i < _VECSIZE; ++i) {
 		mask.values[i] = (maskInt >> i) & 1;
 	}
 
@@ -124,7 +124,7 @@ Vector ltMask(const Vector& v1, const Vector& v2) // NO AVX --------------------
 void seedVecRandom(Vector& rC0, Vector& rC1, Vector& factor, int *seeds, Vector& rSeed) // SIGNIFICANTLY DIFFERENT TO AVX512 -----------------------
 {
 #ifdef SISD
-	for (int i = 0; i < rSeed.vectorSize; i++)
+	for (int i = 0; i < 8; i++)
 	{
 		rSeed.iValues[i] = seeds[i];
 	}
@@ -162,11 +162,12 @@ Vector vecRandom(Vector& rC0, Vector& rC1, Vector& factor, Vector& rSeed) // SIG
 {
 	Vector r;
 #ifdef SISD
-	for (int i = 0; i < 16; i++)
+	for (int i = 0; i < 8; i++)
 	{
 
 		rSeed.iValues[i] = rSeed.iValues[i] * 1664525L + 1013904223L;
 		r.values[i] = (float)rSeed.iValues[i] * 2.328306437087974e-10;
+		r.values[i] += 0.5f;
 	}
 
 	return r;

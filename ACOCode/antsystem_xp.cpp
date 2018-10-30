@@ -38,11 +38,11 @@ void AntSystem::Init( int nAnts, TSP *tsp, int seed )
 	m_iDistSq = (float**)ALLOC( (m_pTSP->numVerts * sizeof( float* )) );
 	m_fNN = (float **)ALLOC( (m_pTSP->numVerts * sizeof( float* )) );
 
-	// for Xeon Phi, each row of the array needs to be padded to a whole number * 16 float and 64-byte aligned.
+	// for Xeon Phi, each row of the array needs to be padded to a whole number * _VECSIZE float and 64-byte aligned.
 	int nRowAlloc = m_pTSP->numVerts;
 
-	if ( nRowAlloc%16 )
-		nRowAlloc = 16 * (nRowAlloc/16 + 1 );
+	if ( nRowAlloc%_VECSIZE )
+		nRowAlloc = _VECSIZE * (nRowAlloc/_VECSIZE + 1 );
 
 	for ( i = 0; i < m_pTSP->numVerts; i++ )
 	{
@@ -72,8 +72,8 @@ void AntSystem::Init( int nAnts, TSP *tsp, int seed )
 	//the ants are initialised in this loop
 	for ( i = 0; i < m_nAnts; i++ )
 	{
-		int seeds[16];
-		for ( int j = 0; j < 16; j++ )
+		int seeds[_VECSIZE];
+		for ( int j = 0; j < _VECSIZE; j++ )
 		{
 			seeds[j] = rlgen.irand( 0xFFFF );
 		}
@@ -295,7 +295,7 @@ void AntSystem::Deposit( void )
 #endif
 	for ( int i = 0; i < m_pTSP->numVerts; i++ )
 	{
- 		for ( int j = 0; j < m_pTSP->numVerts; j+=16 )
+ 		for ( int j = 0; j < m_pTSP->numVerts; j+=_VECSIZE )
 		{
 			
 			Vector pher;

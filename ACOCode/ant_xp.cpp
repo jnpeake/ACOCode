@@ -21,7 +21,7 @@ void Ant::Init( AntSystem *as, int *seeds )
 		nVertPadded = _VECSIZE * (nVertPadded /_VECSIZE +1 ); // pad to multiple of 16 floats
 	//index = (float*)ALLOC( nVertPadded * sizeof(float) ); // 64-byte aligned
 
-	tabu = (short*)ALLOC(nVertPadded * sizeof(short)); // 64-byte aligned
+	tabu = (int*)ALLOC(nVertPadded * sizeof(int)); // 64-byte aligned
 
 	/*// fill the index array
 	for ( int i = 0; i < nVertPadded; i++ )
@@ -35,12 +35,12 @@ void Ant::Init( AntSystem *as, int *seeds )
 	ones.set1(f1);
 }
 
-int Ant::iRoulette( float *weights, short *tabu, int nWeights )
+int Ant::iRoulette( float *weights, int *tabu, int nWeights )
 {
 
-	ALIGN(BITS,float indexSeed[_VECSIZE]) = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, };
-	ALIGN(BITS, float indexStep[_VECSIZE]) = { 8.0f, 8.0f, 8.0f, 8.0f, 8.0f, 8.0f, 8.0f, 8.0f};
-	ALIGN(BITS, float minusOnes[_VECSIZE]) = { -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f};
+	ALIGN(float indexSeed[_VECSIZE]) = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, };
+	ALIGN(float indexStep[_VECSIZE]) = { 8.0f, 8.0f, 8.0f, 8.0f, 8.0f, 8.0f, 8.0f, 8.0f};
+	ALIGN(float minusOnes[_VECSIZE]) = { -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f};
 
 	Vector minusOne;
 	minusOne.load(minusOnes);
@@ -68,17 +68,13 @@ int Ant::iRoulette( float *weights, short *tabu, int nWeights )
 	}
 	// now reduce the elements of curWeights
 	int reduced = reduceMax( curWeights, curIndices );
-	if (reduced > 280)
-	{
-		printf("what no");
-	}
 	return reduced;
 }
 
-int Ant::csRoulette(float *weights, short *tabu, int nVerts, nearestNeighbour *nnList, int numNN)
+int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnList, int numNN)
 {
-	ALIGN(BITS, float indexSeed[_VECSIZE]) = { 0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f};
-	ALIGN(BITS, float minusOnes[_VECSIZE]) = { -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f };
+	ALIGN(float indexSeed[_VECSIZE]) = { 0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f};
+	ALIGN(float minusOnes[_VECSIZE]) = { -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f };
 
 
 	Vector minusOne;
@@ -96,7 +92,7 @@ int Ant::csRoulette(float *weights, short *tabu, int nVerts, nearestNeighbour *n
 
 			Vector randoms = vecRandom(rC0,rC1,factor,rSeed);
 			Vector nextIndices;		
-			Vector tabuMask = int2mask(tabu[nnList[i].vectIndex]);					
+			Vector tabuMask = int2mask(tabu[nnList[i].vectIndex]);	
 			Vector nnMask = int2mask(nnList[i].nnMask);
 		
 			Vector nextWeights;
@@ -107,7 +103,7 @@ int Ant::csRoulette(float *weights, short *tabu, int nVerts, nearestNeighbour *n
 			nextWeights = mask_mov(nextWeights, tabuMask, minusOne);
 		
 			float offset = _VECSIZE*nnList[i].vectIndex;
-			nextIndices.set1(offset);	
+			nextIndices.set1(offset);
 			nextIndices =  nextIndices + baseIndex;
 			maxLocStep(curWeights, curIndices, nextWeights, nextIndices);
 
@@ -121,6 +117,7 @@ int Ant::csRoulette(float *weights, short *tabu, int nVerts, nearestNeighbour *n
 	
 	// now reduce the elements of curWeights
 	int reduced = reduceMax(curWeights, curIndices);
+	
 	if (reduced < 0) {
 		reduced = -1;
 	}
@@ -143,7 +140,7 @@ void Ant::ConstructTour( void )
 	memset( tabu, 0, nVertPadded*sizeof(int));
 	// pick a random start city
 	Vector randoms = vecRandom(rC0,rC1,factor,rSeed);
-	ALIGN(BITS, float r[_VECSIZE]);
+	ALIGN(float r[_VECSIZE]);
 	store(r, randoms);
 	int iLast = tsp->numVerts * r[0]; 
 	if ( iLast == tsp->numVerts )
@@ -161,12 +158,12 @@ void Ant::ConstructTour( void )
 			tabu[i/_VECSIZE] |= (1<<jTabu);
 		}
 	}
+	//std::cout << "new tour \n";
 	for ( i = 1; i < tsp->numVerts; i++ )
 	{
 #pragma noinline
-
 		tour[i] = csRoulette(m_as->m_weights[tour[i - 1]], tabu, nVertPadded, tsp->neighbourVectors[tour[i - 1]], numNN);
-		
+		//std::cout << tour[i] << "\n";
 		if (tour[i] == -1)
 		{
 			tour[i] = iRoulette(m_as->m_weights[tour[i - 1]], tabu, nVertPadded);

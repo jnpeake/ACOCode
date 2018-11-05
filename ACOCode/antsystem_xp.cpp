@@ -72,7 +72,7 @@ void AntSystem::Init( int nAnts, TSP *tsp, int seed )
 	//the ants are initialised in this loop
 	for ( i = 0; i < m_nAnts; i++ )
 	{
-		int seeds[_VECSIZE];
+		int ALIGN(seeds[_VECSIZE]);
 		for ( int j = 0; j < _VECSIZE; j++ )
 		{
 			seeds[j] = rlgen.irand( 0xFFFF );
@@ -135,7 +135,7 @@ void AntSystem::Clear( void )
 	free(tour);
 
 	val = 1.0f/((float)aDist*rho);
-	printf("\nnnTour: %f Initial pheromone: %f\n",aDist,val);
+	printf("\nnnTour: %f Initial pheromone: %f\n",aDist,val);fflush(stdout);
 
 
 	//from 0 to numVerts
@@ -274,10 +274,10 @@ void AntSystem::Deposit( void )
 	}
 
 	DepositFromTour( m_pAnts[iBest].tour, dBest );
-	ALIGN(BITS, float pherMin);
-	ALIGN(BITS, float pherMax);
-	ALIGN(BITS, float evapFac) = 1.0f - rho;
-	ALIGN(BITS, float one) = 1.0f;
+	ALIGN(float pherMin);
+	ALIGN(float pherMax);
+	ALIGN(float evapFac) = 1.0f - rho;
+	ALIGN(float one) = 1.0f;
 
 	pherMax = 1.0f/(rho * m_shortestDist );
 	pherMin = pherMax * mmasConst;
@@ -370,23 +370,21 @@ void AntSystem::CalcStagnationMetrics( void )
 
 void AntSystem::Iterate( void )
 {
-  timers->StartTimer(0);
-  DoTours(); 
-  timers->StopTimer(0);
-
-  timers->StartTimer(1);
-  Deposit();
-  timers->StopTimer(1);
+  	timers->StartTimer(0);
+  	DoTours(); 
+  	timers->StopTimer(0);
+  	timers->StartTimer(1);
+  	Deposit();
+  	timers->StopTimer(1);
 }
 
 void AntSystem::Solve( int maxIterations, int maxStagnantIterations, bool continueStagnant )
 {
-
+	
 	//performs an initial clear of the any system
 	Clear();
 	float shortestSoFar = 1e20f;
 	int sinceChange = 0;
-	
 	int i;
 	bool stagnated = false;
 	timers->Clear();
@@ -396,10 +394,10 @@ void AntSystem::Solve( int maxIterations, int maxStagnantIterations, bool contin
 	for ( i = 0; i < maxIterations && !(stagnated && !continueStagnant); i++ )
 	{
 		Iterate();
-		
+		//std::cout << i << "\n";
 		if (i % 100 == 0)
 		{
-			printf("\nIteration: %d, Shortest Distance: %f, Timers: %f %f", i, m_shortestDist, timers->GetTimer(0), timers->GetTimer(1));
+			printf("\nIteration: %d, Shortest Distance: %f, Timers: %f %f", i, m_shortestDist, timers->GetTimer(0), timers->GetTimer(1));fflush(stdout);
 		}
 		
 

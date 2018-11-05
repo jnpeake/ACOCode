@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <vector>
+#include "platform.h"
 
 typedef struct
 {
@@ -14,7 +15,7 @@ typedef struct
 
 typedef struct
 {
-	short nnMask; //mask with bits set for vector lanes which contains NN
+	int nnMask; //mask with bits set for vector lanes which contains NN
 	int vectIndex = -1; //index of pheromone matrix vector which contains NNs
 } nearestNeighbour;
 
@@ -197,22 +198,23 @@ public:
 			{
 				nearestNeighbour _nn;
 				_nn.nnMask = 0;
-				_nn.vectIndex = tempList[i].index / 8;
-				short remainder = tempList[i].index % 8;
+				_nn.vectIndex = tempList[i].index / _VECSIZE;
+				int remainder = tempList[i].index % _VECSIZE;
 				_nn.nnMask |=  1UL << remainder;
 				tempList[i].index = -1;
 				for (int j = 0; j < numNN; j++)
 				{
-					if (tempList[j].index / 8 == _nn.vectIndex && tempList[j].index != -1)
+					if (tempList[j].index / _VECSIZE == _nn.vectIndex && tempList[j].index != -1)
 					{
 						
-						short remainder = tempList[j].index % 8;
+						int remainder = tempList[j].index % _VECSIZE;
 						_nn.nnMask |= 1UL << remainder;
 						tempList[j].index = -1;
 					}
 				}		
 				//_nn.nnMask = (1 << _nn.nnMask) - 1;
 				newNN[count2] = _nn;
+				//printf("\n Vector Index:%d, Mask:%d",_nn.vectIndex,_nn.nnMask);
 				count2++;
 
 			}
@@ -226,7 +228,7 @@ public:
 		for (int i = count2; i < numNN; i++)
 		{
 			nearestNeighbour _nn;
-			_nn.nnMask = NULL;
+			_nn.nnMask = -1;
 			_nn.vectIndex = -1;
 			newNN[count2] = _nn;
 			count2++;

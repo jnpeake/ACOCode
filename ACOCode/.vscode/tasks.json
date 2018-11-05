@@ -1,0 +1,21 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build antmain",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "vector.cpp", "ant_xp.cpp", "antsystem_xp.cpp", "antmain.cpp", "-g", "-o", "antmain" ,"-std=c++11","-fopenmp","-O2","-mavx2"
+
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+
+        }
+    ]
+}

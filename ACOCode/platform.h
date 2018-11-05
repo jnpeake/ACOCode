@@ -3,10 +3,19 @@
 
 //#define EMULATE
 //#define USE_VROULETTE
-//#define AVX2
+#ifdef __AVX2__
+#define AVX2
+#define BITS 32
+#define _VECSIZE 8
+#elif defined __AVX512F__
+#define _VECSIZE 16
+#define BITS 64
+#define AVX512
+#else
 #define SISD
 #define BITS 32
 #define _VECSIZE 8
+#endif
 #ifndef EMULATE
 #define ALLOC( _x ) _mm_malloc( (_x), 64 )
 #define FREE( _x ) _mm_free( _x )
@@ -17,9 +26,9 @@
 #endif
 
 #ifdef __GNUC__
-#define ALIGN(a,b) b __attribute__ ((aligned (a)))
+#define ALIGN(a) a __attribute__ ((aligned (BITS)))
 #else
-#define ALIGN(a,b) __declspec(align(a)) b
+#define ALIGN(a) __declspec(align(BITS)) a
 #endif
 
 

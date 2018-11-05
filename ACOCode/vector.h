@@ -131,7 +131,6 @@ public:
 	void set1(float setValue)
 	{
 #ifdef SISD
-
 		for (int i = 0; i < vectorSize; i++)
 		{
 			this->values[i] = setValue;
@@ -254,4 +253,4 @@ void maxLocStep(Vector &oldWeights, Vector &oldIndices, Vector &newWeights, Vect
 int reduceMax(Vector &curWeights, Vector &curIndices);
 void store(float* loc, const Vector& v1);
 void store(int* loc, const Vector& v1);
-//void printVec(Vector v1);
+void printVec(Vector v1);

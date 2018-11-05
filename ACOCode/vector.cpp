@@ -23,8 +23,16 @@ Vector int2mask(int maskInt) // NO AVX --------------------------
 #elif (defined AVX || defined AVX2)
 	Vector resultVector;
 	float mask[8];
-	for (int i = 0; i < 8; ++i) {
-		mask[i] = (maskInt >> i) & 1;
+	for (int i = 0; i < 8; i++) {
+		if ((maskInt >> i) & 1)
+		{
+			mask[i] = 1.0f;
+		}
+
+		else
+		{
+			mask[i] = -1.0f;
+		}
 	}
 
 	resultVector.AVXVec = _mm256_setr_ps(mask[0], mask[1], mask[2], mask[3], mask[4], mask[5], mask[6], mask[7]);
@@ -40,7 +48,7 @@ Vector mask_mov(const Vector& v1, const Vector& bitMask, const Vector& v2) // NO
 {
 	Vector resultVector;
 #ifdef SISD
-	for (int i = 0; i < 16; i++)
+	for (int i = 0; i < _VECSIZE; i++)
 	{
 		if (bitMask.values[i] == 0)
 		{
@@ -59,7 +67,7 @@ Vector mask_mov(const Vector& v1, const Vector& bitMask, const Vector& v2) // NO
 	resultVector.AVXVec = _mm512_mask_mov_ps(v1.AVXVec, bitMask.maskVec, v2.AVXVec);
 	return resultVector;
 #elif (defined AVX || defined AVX2)
-	resultVector.AVXVec = _mm256_blendv_ps(v1.AVXVec, v2.AVXVec, bitMask.AVXVec);
+	resultVector.AVXVec = _mm256_blendv_ps(v2.AVXVec, v1.AVXVec, bitMask.AVXVec);
 	return resultVector;
 #endif // AVX512
 }
@@ -70,7 +78,7 @@ Vector gtMask(const Vector& v1, const Vector& v2) // NO AVX -------------------
 	Vector resultMask;
 #ifdef SISD
 
-	for (int i = 0; i < 16; i++)
+	for (int i = 0; i < _VECSIZE; i++)
 	{
 		if (v1.values[i] > v2.values[i])
 		{
@@ -98,7 +106,7 @@ Vector ltMask(const Vector& v1, const Vector& v2) // NO AVX --------------------
 {
 	Vector resultMask;
 #ifdef SISD
-	for (int i = 0; i < 16; i++)
+	for (int i = 0; i < _VECSIZE; i++)
 	{
 		if (v1.values[i] < v2.values[i])
 		{
@@ -215,8 +223,8 @@ void maxLocStep(Vector &oldWeights, Vector &oldIndices, Vector &newWeights, Vect
 #elif (defined AVX || defined AVX2)
 	Vector maxMask;
 	maxMask = gtMask(newWeights, oldWeights);
-	oldWeights = mask_mov(oldWeights, maxMask, newWeights);
-	oldIndices = mask_mov(oldIndices, maxMask, newIndices);
+	oldWeights = mask_mov(newWeights, maxMask, oldWeights);
+	oldIndices = mask_mov(newIndices, maxMask, oldIndices);
 #endif
 
 
@@ -228,8 +236,8 @@ int reduceMax(Vector &curWeights, Vector &curIndices) // SIGNIFICANTLY DIFFERENT
 #ifdef SISD
 
 	int highestIndex = -1;
-	float highestValue = 0;
-	for (int i = 0; i < 16; i++)
+	float highestValue = -1.0f;
+	for (int i = 0; i < _VECSIZE; i++)
 	{
 		if (curWeights.values[i] > highestValue)
 		{
@@ -237,6 +245,7 @@ int reduceMax(Vector &curWeights, Vector &curIndices) // SIGNIFICANTLY DIFFERENT
 			highestIndex = curIndices.values[i];
 		}
 	}
+
 	return highestIndex;
 #elif defined AVX512
 	// return a vector with all elements equal to ivec[imax] where
@@ -302,7 +311,7 @@ void store(float* loc, const Vector& v1)
 {
 #ifdef SISD
 
-	for (int i = 0; i < 16; i++)
+	for (int i = 0; i < _VECSIZE; i++)
 	{
 		loc[i] = v1.values[i];
 	}
@@ -318,7 +327,7 @@ void store(int* loc, const Vector& v1)
 {
 #ifdef SISD
 
-	for (int i = 0; i < 16; i++)
+	for (int i = 0; i < _VECSIZE; i++)
 	{
 		loc[i] = v1.values[i];
 	}

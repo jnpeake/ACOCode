@@ -37,10 +37,10 @@ public:
 	int nVertPadded;
 	float *index; // array of indices (0..nVerts), for iRoulette
 
-	short *tabu; // tabu list
+	int *tabu; // tabu list
 
-	int iRoulette( float *weights, short *tabu, int nWeights);
-	int csRoulette(float *weights, short *tabu, int nWeights, nearestNeighbour *nnList, int numNN);
+	int iRoulette( float *weights, int *tabu, int nWeights);
+	int csRoulette(float *weights, int *tabu, int nWeights, nearestNeighbour *nnList, int numNN);
 
 
 

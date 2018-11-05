@@ -12,7 +12,7 @@ int main( int argc, char *argv[] )
     {
       fprintf(stderr,"parameters: problemfile, number of iterations, nNeighbours, number of ants, (seed)\n");
     }
-
+  printf("%d \n",omp_get_num_procs());
   TSP *tsp = new TSP();
   int nNeighbours;
   sscanf( argv[3], "%d", &nNeighbours );

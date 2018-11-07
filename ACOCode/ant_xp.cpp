@@ -92,7 +92,7 @@ int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnL
 
 			Vector randoms = vecRandom(rC0,rC1,factor,rSeed);
 			Vector nextIndices;		
-			Vector tabuMask = int2mask(tabu[nnList[i].vectIndex]);	
+			Vector tabuMask = int2mask(tabu[nnList[i].vectIndex]);					
 			Vector nnMask = int2mask(nnList[i].nnMask);
 		
 			Vector nextWeights;
@@ -103,7 +103,7 @@ int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnL
 			nextWeights = mask_mov(nextWeights, tabuMask, minusOne);
 		
 			float offset = _VECSIZE*nnList[i].vectIndex;
-			nextIndices.set1(offset);
+			nextIndices.set1(offset);	
 			nextIndices =  nextIndices + baseIndex;
 			maxLocStep(curWeights, curIndices, nextWeights, nextIndices);
 
@@ -117,7 +117,6 @@ int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnL
 	
 	// now reduce the elements of curWeights
 	int reduced = reduceMax(curWeights, curIndices);
-	
 	if (reduced < 0) {
 		reduced = -1;
 	}

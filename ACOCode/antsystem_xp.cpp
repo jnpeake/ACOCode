@@ -135,7 +135,7 @@ void AntSystem::Clear( void )
 	free(tour);
 
 	val = 1.0f/((float)aDist*rho);
-	printf("\nnnTour: %f Initial pheromone: %f\n",aDist,val);fflush(stdout);
+	//printf("\nnnTour: %f Initial pheromone: %f\n",aDist,val);fflush(stdout);
 
 
 	//from 0 to numVerts
@@ -161,7 +161,8 @@ void AntSystem::Clear( void )
 				m_fNN[i][j] = 1.0f;
 		}
 
-		//from 0 to numverts
+		nearestNeighbour* nn = m_pTSP->neighbourVectors[i];
+	//from 0 to numverts
 		for ( j = 0; j < m_pTSP->numVerts; j++ )
 		{
 			//pheromone value is set
@@ -171,11 +172,7 @@ void AntSystem::Clear( void )
 			m_iDistSq[i][j] = 1.0f/(m_pTSP->edgeDist[i][j]*m_pTSP->edgeDist[i][j]);
 			//pheromone / edgeDist^2
 			m_weights[i][j] = (m_pher[i][j]/(m_pTSP->edgeDist[i][j]*m_pTSP->edgeDist[i][j]))*1000;
-#ifndef VANILLA
 
-			//weight = (weight) * (1 + (1000*m_fNN)) - makes nearest neighbour edges 1000x more likely to be picked
-			//m_weights[i][j] *= ( 1.0f + 1000.0f);
-#endif
 		}
 	}
 
@@ -395,10 +392,10 @@ void AntSystem::Solve( int maxIterations, int maxStagnantIterations, bool contin
 	{
 		Iterate();
 		//std::cout << i << "\n";
-		if (i % 100 == 0)
+		/*if (i % 100 == 0)
 		{
 			printf("\nIteration: %d, Shortest Distance: %f, Timers: %f %f", i, m_shortestDist, timers->GetTimer(0), timers->GetTimer(1));fflush(stdout);
-		}
+		}*/
 		
 
 		if ( m_shortestDist < shortestSoFar )

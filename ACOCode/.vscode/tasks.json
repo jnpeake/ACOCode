@@ -8,7 +8,7 @@
             "type": "shell",
             "command": "g++",
             "args": [
-                "vector.cpp", "ant_xp.cpp", "antsystem_xp.cpp", "antmain.cpp", "-g", "-o", "antmain" ,"-std=c++11","-fopenmp","-O2","-mavx2"
+                "vector.cpp", "ant_xp.cpp", "antsystem_xp.cpp", "antmain.cpp", "-g", "-o", "antmain" ,"-std=c++11","-fopenmp","-mavx2"
 
             ],
             "group": {

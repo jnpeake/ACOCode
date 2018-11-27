@@ -39,10 +39,10 @@ void AntSystem::Init( int nAnts, TSP *tsp, int seed )
 	m_fNN = (float **)ALLOC( (m_pTSP->numVerts * sizeof( float* )) );
 
 	// for Xeon Phi, each row of the array needs to be padded to a whole number * _VECSIZE float and 64-byte aligned.
-	int nRowAlloc = m_pTSP->numVerts;
+	int nRowAlloc = m_pTSP->numNN*_VECSIZE;
 
-	if ( nRowAlloc%_VECSIZE )
-		nRowAlloc = _VECSIZE * (nRowAlloc/_VECSIZE + 1 );
+	//if ( nRowAlloc%_VECSIZE )
+		//nRowAlloc = _VECSIZE * (nRowAlloc/_VECSIZE + 1 );
 
 	for ( i = 0; i < m_pTSP->numVerts; i++ )
 	{
@@ -96,8 +96,9 @@ void AntSystem::Clear( void )
 	float aDist = 0.0f;
 	int i, j;
 	float val;
-
+/*
 	int *tour = (int*)malloc(m_pTSP->numVerts * sizeof(int));
+	
 	for ( i = 0; i < m_pTSP->numVerts; i++ )
 	{
 		tour[i] = i;
@@ -107,7 +108,7 @@ void AntSystem::Clear( void )
 	{
 		float nearD = 1e20f;
 		int nearI;
-		for ( j = i+1; j < m_pTSP->numVerts; j++ )
+		for ( j = i+1; j < m_pTSP->numNN*_VECSIZE; j++ )
 		{
 			if ( m_pTSP->edgeDist[tour[i]][tour[j]] < nearD )
 			{
@@ -136,42 +137,24 @@ void AntSystem::Clear( void )
 
 	val = 1.0f/((float)aDist*rho);
 	//printf("\nnnTour: %f Initial pheromone: %f\n",aDist,val);fflush(stdout);
-
+*/
 
 	//from 0 to numVerts
 	for ( i = 0; i < m_pTSP->numVerts; i++ )
 	{
 		//if the specified number of nearest neighbours is not 0
-		if ( m_pTSP->numNN != 0 )
-		{
-			//first numVerts values of m_fNN set to 0
-			memset( m_fNN[i], 0, m_pTSP->numVerts*sizeof(float));
-			for ( j = 0; j < m_pTSP->numNN; j++ )
-			{
-				//sets the first numNN nearest neighbours to 1
-				//m_fNN[i][m_pTSP->nnList[i][j]] = 1.0f;
-			}
-		}
-
-		//if no nearest neighbours specified
-		else
-		{
-			//everything is set as nearest neighbour
-			for ( j = 0; j < m_pTSP->numVerts; j++ )
-				m_fNN[i][j] = 1.0f;
-		}
 
 		nearestNeighbour* nn = m_pTSP->neighbourVectors[i];
 	//from 0 to numverts
-		for ( j = 0; j < m_pTSP->numVerts; j++ )
+		for ( j = 0; j < m_pTSP->numNN*_VECSIZE; j++ )
 		{
 			//pheromone value is set
-			m_pher[i][j] = val;
+			SetPheromoneValue(i,j,0.5);
 
 			//inverse square of edge distances
 			m_iDistSq[i][j] = 1.0f/(m_pTSP->edgeDist[i][j]*m_pTSP->edgeDist[i][j]);
 			//pheromone / edgeDist^2
-			m_weights[i][j] = (m_pher[i][j]/(m_pTSP->edgeDist[i][j]*m_pTSP->edgeDist[i][j]))*1000;
+			m_weights[i][j] = (GetPheromoneValue(i,j)/(m_pTSP->edgeDist[i][j]*m_pTSP->edgeDist[i][j]))*1000;
 
 		}
 	}
@@ -201,7 +184,7 @@ void AntSystem::Evaporate( void )
 	{
 	  for ( int j = 0; j < nVerts; j++ )
 	    {
-			m_pher[i][j] *= (1.0f - rho);
+			SetPheromoneValue(i,j,GetPheromoneValue(i,j) * (1.0f - rho));
 	    }
 	}
 }
@@ -247,8 +230,9 @@ void AntSystem::DepositFromTour( int *tour, float tourLength )
 	//adds pheromone to the specified edges
 	for ( int i = 0; i < m_pTSP->numVerts; i++ )
 	{
-		m_pher[tour[i]][tour[(i+1)%m_pTSP->numVerts]] += deltaPher;
-		m_pher[tour[(i+1)%m_pTSP->numVerts]][tour[i]] += deltaPher;
+		SetPheromoneValue(tour[i],tour[(i+1)%m_pTSP->numVerts],deltaPher);
+		//m_pher[tour[i]][tour[(i+1)%m_pTSP->numVerts]] += deltaPher;
+		//m_pher[tour[(i+1)%m_pTSP->numVerts]][tour[i]] += deltaPher;
 	}
 
 }
@@ -420,4 +404,15 @@ void AntSystem::Solve( int maxIterations, int maxStagnantIterations, bool contin
 	printf("\nTIMERS: Tour %f Pheromone %f\n",timers->GetTimer(0),timers->GetTimer(1));
 #endif
 //	CalcStagnationMetrics();
+}
+
+int AntSystem::GetPheromoneValue(int pointA, int pointB)
+{
+	return m_pher[pointA][pointB];
+}
+
+void AntSystem::SetPheromoneValue(int pointA, int pointB, int deltaPher)
+{
+	m_pher[pointA][pointB] += deltaPher;
+	m_pher[pointB][pointA] += deltaPher;
 }

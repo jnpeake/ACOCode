@@ -53,8 +53,10 @@ int Ant::iRoulette( float *weights, int *tabu, int nWeights )
  	Vector tabuMask = int2mask( tabu[0] );
 	for ( int i = 0; i < nWeights/_VECSIZE; i++ )
 	{
+		ALIGN(float defaultVal[_VECSIZE]) = {0.5f,0.5f,0.5f,0.5f,0.5f,0.5f,0.5f,0.5f};
 		Vector nextWeights;
-		nextWeights.load(weights + i * _VECSIZE);
+		//nextWeights.load(weights + i * _VECSIZE);
+		nextWeights.load(defaultVal);
 		Vector nextIndices =  runningIndex;
 		Vector randoms = vecRandom(rC0,rC1,factor,rSeed);
 		

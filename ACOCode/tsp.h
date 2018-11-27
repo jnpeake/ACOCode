@@ -46,7 +46,8 @@ class TSP
 {
 public:
 	float **edgeDist;
-	float **edgeDistNew;
+	float *vertX;
+	float *vertY;
 	int numVerts;
 	int **nnList;
 	int numNN;
@@ -56,13 +57,15 @@ public:
 	int (*distanceFunc)(float, float, float, float);
 	
 
-	float** CalcNNTour()
+	void CalcNNTour(float *&origVertX, float *&origVertY)
 	{
 		float aDist = 0.0f;
 		int i, j;
 		int *tour = (int*)malloc(numVerts * sizeof(int));
+		float *newVertX = (float*)malloc( numVerts * sizeof(float) );
+		float *newVertY = (float*)malloc( numVerts * sizeof(float) );
 
-		//sets each step of the tour to i
+
 		for ( i = 0; i < numVerts; i++ )
 		{
 			tour[i] = i;
@@ -73,25 +76,21 @@ public:
 				int nearI;
 				for ( j = i+1; j < numVerts; j++ )
 				{
-					//if the distance between edge i and edge j is less than near D, nearD is set to the distance and nearI becomes j
-					if ( edgeDist[tour[i]][tour[j]] < nearD )
+					if ( CalcEdgeDist(tour[i],tour[j]) < nearD )
 					{
-						nearD = edgeDist[tour[i]][tour[j]];
+						nearD = CalcEdgeDist(tour[i],tour[j]);
 						nearI = j;
 					}
 				}
-				// add distance and swap new index into tour
 				aDist += nearD;
-
 				int swap = tour[i+1];
 				tour[i+1] = tour[nearI];
 				tour[nearI] = swap;
 			}
 
 			//the distance between the last two vertices is added to aDist, as well as the distance between the last and first vertex
-			aDist += edgeDist[tour[numVerts-2]][tour[numVerts-1]];
-			aDist += edgeDist[tour[0]][tour[numVerts-1]];
-
+			aDist += CalcEdgeDist(tour[numVerts-2],tour[numVerts-1]);
+			aDist += CalcEdgeDist(tour[0],tour[numVerts-1]);
 			float sanityCheck = 0.0f;
 			for ( i = 0; i < numVerts; i++ )
 			{
@@ -99,15 +98,13 @@ public:
 
 				int i1 = tour[(i+1)%numVerts];
 				//printf("\n SANITY CHECK i1: %d", i1);
-				sanityCheck += edgeDist[i0][i1];
-			}
-			
-			edgeDistNew = (float**)malloc( numVerts * sizeof( float* ) );
-			for ( i = 0; i < numVerts; i++ )
-				edgeDistNew[i] = (float*)malloc( numVerts * sizeof( float ) );
-
+				sanityCheck += CalcEdgeDist(i0,i1);
+			}		
 			for (i = 0; i < numVerts; i++)
 			{
+				newVertX[i] = origVertX[tour[i]];
+				newVertY[i] = origVertY[tour[i]];
+				/*
 				for(j = 0; j < numVerts; j++)
 				{ 
 					if(i == j)
@@ -116,113 +113,64 @@ public:
 					}
 					else
 					{
-						edgeDistNew[i][j] = edgeDist[tour[i]][tour[j]];
+						//edgeDistNew[i][j] = CalcEdgeDist(tour[i],tour[j]);
 					}	
-				}
-
+				}*/
 			}
-			
-			return edgeDistNew;
+			printf("X: %f, Y: %f\n", newVertX[10],newVertY[10]);
+			printf("X: %f, Y: %f\n", origVertX[10],origVertY[10]);
+			origVertX = newVertX;
+			origVertY = newVertY;			
+			printf("X: %f, Y: %f", origVertX[10],origVertY[10]);
 	}
 	
 	void FillNNList(int iList)
 	{	
-		//*tempList is a distSort array of size numverts-1 * 8
-		//distSort is a struct declared earlier, with two parameters:
-		//float dist;
-		//int index;
-		//printf("\n Size of distSort %d ", sizeof(distSort));
 		nearestNeighbour *newNN = (nearestNeighbour*)malloc(numNN * sizeof(nearestNeighbour));
 		distSort *tempList = (distSort*)malloc((numVerts - 1) * sizeof(distSort));
+		
+			
 		int count = 0;
 		for (int i = 0; i < numVerts; i++)
 		{
-			//checks if i matches the iList parameter, which itself is the iterating value of another for loop
-			//if false, adds a distSort struct to the array with the index i and a dist value of the value at i, iList of the edgeDist
-
-			//the purpose of this for loop is to get the list of weights for the vertex at iList - stay the same as default
 			if (i != iList)
-			{
-					
+			{				
 				tempList[count].index = i;
-				tempList[count].dist = edgeDist[i][iList];
-				//printf("\n Temp List %d data: Index: %d Dist: %f", count, i, edgeDist[i][iList]);
-				count++;
-					
+				tempList[count].dist = CalcEdgeDist(i,iList);
+				count++;					
 			}
 		}
-		qsort(tempList, numVerts - 1, sizeof(distSort), nnComp);
-		
-		
-		
+		qsort(tempList, numVerts - 1, sizeof(distSort), nnComp);		
 		int count2 = 0;
-		/////now we have the sorted list - time to find the index of the matrices in the pheromone matrix
-/*
- // HL 5/3/18 - suggested improvement (this should be quicker) 
-		for (int i = 0; i < numNN; i++)
-		{
 
-			int vectIndex = tempList[i].index / 16;
-			int indexInVec = tempList[i].index % 16;
-			int found = -1;
-			// check to see if we already have an entry for this vector
-			for (int j = 0; j < count2; j++)
-			{
-				if (vectIndex == newNN[j].vectIndex)
-				{
-					found = j;
-					break;
-				}
-			}
-			if (found != -1)
-			{
-				// update the existing entry
-				newNN[found].nnMask |= (1UL << indexInVec);
-			}
-			else
-			{
-				// create a new entry
-				newNN[count2].vectIndex = vectIndex;
-				newNN[count2].nnMask = (1UL << indexInVec);
-				count2++;
-			}
-		}
-		// fill the remainder of the list with -1 (sentinel value)
-		for (int i = count2; i < numNN; i++)
-			newNN[i].vectIndex = -1;
-*/
 		for (int i = 0; i < numNN; i++)
-		{
-
+		{		
 			if (tempList[i].index != -1)
-			{
+			{	
 				nearestNeighbour _nn;
 				_nn.nnMask = 0;
 				_nn.vectIndex = tempList[i].index / _VECSIZE;
 				int remainder = tempList[i].index % _VECSIZE;
+				int edgeDistCount = 0;
+				for(int j = _nn.vectIndex * _VECSIZE; j < (_nn.vectIndex * _VECSIZE) + _VECSIZE; j++ )
+				{
+					edgeDist[iList][(i*_VECSIZE)+edgeDistCount] = CalcEdgeDist(iList,j);
+					edgeDistCount++;
+				}
 				_nn.nnMask |=  1UL << remainder;
 				tempList[i].index = -1;
 				for (int j = 0; j < numNN; j++)
 				{
 					if (tempList[j].index / _VECSIZE == _nn.vectIndex && tempList[j].index != -1)
 					{
-						
 						int remainder = tempList[j].index % _VECSIZE;
 						_nn.nnMask |= 1UL << remainder;
 						tempList[j].index = -1;
 					}
 				}		
-				//_nn.nnMask = (1 << _nn.nnMask) - 1;
 				newNN[count2] = _nn;
-				//printf("\n Vector Index:%d, Mask:%d",_nn.vectIndex,_nn.nnMask);
 				count2++;
-
 			}
-
-			//printf("\n%d",i);
-			
-			//printf("\n Adding value %d to nnList at position %d,%d", tempList[i].index, iList, i);
-			//nnList[iList][i] = tempList[i].index;
 		}
 
 		for (int i = count2; i < numNN; i++)
@@ -236,8 +184,6 @@ public:
 
 		free(tempList);
 		neighbourVectors[iList] = newNN;
-		//printf("Adding to neighbourVectors");
-		//free(newNN);
 	}
 
 	
@@ -297,17 +243,17 @@ public:
 		return dist;
 	}
 
+	int CalcEdgeDist(int pointA, int pointB)
+	{
+		return distanceFunc(vertX[pointA], vertY[pointA], vertX[pointB], vertY[pointB]);
+		//return 1;
+	}
+
 
 	void Init( const char *fileName, int nNearNeighbours )
 	{
 		int i, j, k;
-
-		float *vertX;
-		float *vertY;
-
-		numVerts= 0;
-
-		//fopen opens the specified file and associates it with a stream that can be identified by the specified pointer (*fp)
+		numVerts = 0;
 		FILE *fp = fopen( fileName, "r");
 
 		if ( fp == NULL )
@@ -317,7 +263,6 @@ public:
 			return;
 		}
 
-		//malloc = allocate memory block. In this case the block is 1KB (1024 Bytes). *line is a pointer to the beginning of this block.
 		char *line = (char*)malloc( 1024 );
 		// read the header 
 		int stillHeader = 1;
@@ -424,25 +369,14 @@ public:
 			}
 		}
 		fclose(fp);
-		//printf("\n Pre numVerts %d", numVerts);
-		//number of vertices is updated in case duplicates were found in the previous step
 		numVerts = iVert;
-		//printf("\n Post numVerts %d", numVerts);
 		
 
-		// construct the edges
-		// pointer-to-pointer-to-float matrix of numverts * 4
-		edgeDist = (float**)malloc( numVerts * sizeof( float* ) );
-
-		//each value in edgeDist array is a pointer to a float which is numverts * 4
-		for ( i = 0; i < numVerts; i++ )
-			edgeDist[i] = (float*)malloc( numVerts * sizeof( float ) );
-
-		//this creates a matrix of numVerts*numVerts
+		
+/*
 		for ( i = 0; i < numVerts; i++ )
 		{
 
-			//distance between each city is calculated and added to edge matrix
 			for ( j = 0; j < numVerts; j++ )
 			{
 				if (i == j)
@@ -450,21 +384,19 @@ public:
 				else
 					edgeDist[i][j] = distanceFunc( vertX[i], vertY[i], vertX[j], vertY[j] );
 			}
-		}
-		// don't need the vertex positions any more
-		free( vertX );
-		free( vertY );
-		//printf("\n%f",edgeDist[1][2]);
-		edgeDist = CalcNNTour();
-		//printf("\n%f",edgeDist[1][2]);
+		}*/
 
-		// initialize the nearest neighbour lists
-		//numNN is set to the number of nearest neighbours passed into the program as a parameter
+		
+		//printf("X: %f, Y: %f\n", vertX[0],vertY[0]);
+		CalcNNTour(vertX,vertY);
+		//printf("X: %f, Y: %f", vertX[0],vertY[0]);
+
 		numNN = nNearNeighbours;
-
-		//nnList is a pointer-to-pointer-to-int array of numVerts * 4
-		//nnList = (int **)malloc( numVerts * sizeof(int*) );
 		neighbourVectors = (nearestNeighbour**)malloc(numVerts * sizeof(nearestNeighbour**));
+		edgeDist = (float**)malloc( numVerts * sizeof( float* ) );
+
+		for ( int i = 0; i < numVerts; i++ )
+			edgeDist[i] = (float*)malloc( (numNN * _VECSIZE) * sizeof( float ) );
 
 
 		for ( i = 0; i < numVerts; i++ )
@@ -477,6 +409,7 @@ public:
   			
 			
 		}
+
 
 		/*for(int j = 0; j < 32; j++)
 		{

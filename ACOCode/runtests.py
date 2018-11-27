@@ -29,7 +29,8 @@ num_seeds = 50
 num_tsp = 10
 seeds = []
 #seeds = ['12345','54321','11111','22222','10101','99999','06994','98765','22222','33333']
-tsp = ['lin318.tsp','pcb442.tsp','rat783.tsp','pr1002.tsp','fl1577.tsp','pr2392.tsp','fl3795.tsp','rl5934.tsp','pla7397.tsp','rl11849.tsp']
+#tsp = ['lin318.tsp','pcb442.tsp','rat783.tsp','pr1002.tsp','fl1577.tsp','pr2392.tsp','fl3795.tsp','rl5934.tsp','pla7397.tsp','rl11849.tsp']
+tsp = ['lin318.tsp','pcb442.tsp','rat783.tsp','pr1002.tsp','fl1577.tsp','pr2392.tsp']
 #tsp = ['pr2392.tsp','fl3795.tsp','rl5934.tsp','pla7397.tsp','rl11849.tsp']
 #tsp = ['pla7397.tsp','rl11849.tsp']
 #tsp = ['rl11849.tsp']
@@ -37,14 +38,14 @@ tsp = ['lin318.tsp','pcb442.tsp','rat783.tsp','pr1002.tsp','fl1577.tsp','pr2392.
 for i in range(num_seeds):
     seeds.append(str(random.randint(0,99999)))
     
-ant_commands = ['//home//joshua//ACOCode//ACOCode//antmain', 'a280.tsp', '1024', '32', '256', '12345']
-ant_commands_original = ['//home//joshua//code//aco//antmain', 'a280.tsp', '1024', '32','256','12345']
+ant_commands = ['//home//staff//joshuap//Code//ACOCode//ACOCode//antmain', 'a280.tsp', '1024', '32', '256', '12345']
+
 
 
 totalTimeList = [];
 totalLengthList = [];
 
-with open('ACOResultsFixedPreProcess.csv', 'w') as csvfile:
+with open('DefaultVal.csv', 'w') as csvfile:
     resultWriter = csv.writer(csvfile, delimiter=',',
                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
     resultWriter.writerow(['NNList', 'Seed'])
@@ -64,10 +65,10 @@ with open('ACOResultsFixedPreProcess.csv', 'w') as csvfile:
                 start_time = timeit.default_timer()
                 output = subprocess.check_output( ant_commands)
                 vals = output.split()
-            	time = float(vals[-1])
-            	length = float(vals[-3])
-            	timeList.append(time)
-            	lengthList.append(length)
+                time = float(vals[-1])
+                length = float(vals[-3])
+                timeList.append(time)
+                lengthList.append(length)
                 end = timeit.default_timer() - start_time
                 totalTimeList.append(end)
             resultWriter.writerow(timeList)
@@ -101,8 +102,8 @@ with open('ACOResultsFixedPreProcess.csv', 'w') as csvfile:
                 start_time = timeit.default_timer()
                 output = subprocess.check_output( ant_commands_original)
                 vals = output.split()
-            	time = float(vals[-1])
-            	length = float(vals[-3])
+                time = float(vals[-1])
+                length = float(vals[-3])
                 timeList.append(time)
                 lengthList.append(length)
                 end = timeit.default_timer() - start_time

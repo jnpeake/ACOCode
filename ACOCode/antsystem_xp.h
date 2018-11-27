@@ -53,6 +53,8 @@ public:
 	TSP *GetTSP( void ) { return m_pTSP; }
 	int fallbackCount;
 	int usingNNCount;
+	int GetPheromoneValue(int pointA, int pointB);
+	void SetPheromoneValue(int pointA, int pointB, int deltaPher);
 
 	// return results
 	float GetShortestTourLength() { return m_shortestDist; }
@@ -64,6 +66,7 @@ public:
 	float GetStagnationTourLength( void ) { return stagnationTourLength; }
 	float GetPheromoneTime() { return (float)timers->GetTimer(1); }
 	float GetTourTime() { return (float)timers->GetTimer(0); }
+	
 
 };
 

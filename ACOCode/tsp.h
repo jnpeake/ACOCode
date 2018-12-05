@@ -48,6 +48,7 @@ public:
 	float **edgeDist;
 	float *vertX;
 	float *vertY;
+	float nnDist;
 	int numVerts;
 	int **nnList;
 	int numNN;
@@ -91,6 +92,9 @@ public:
 			//the distance between the last two vertices is added to aDist, as well as the distance between the last and first vertex
 			aDist += CalcEdgeDist(tour[numVerts-2],tour[numVerts-1]);
 			aDist += CalcEdgeDist(tour[0],tour[numVerts-1]);
+
+			nnDist = aDist;
+
 			float sanityCheck = 0.0f;
 			for ( i = 0; i < numVerts; i++ )
 			{
@@ -117,11 +121,11 @@ public:
 					}	
 				}*/
 			}
-			printf("X: %f, Y: %f\n", newVertX[10],newVertY[10]);
-			printf("X: %f, Y: %f\n", origVertX[10],origVertY[10]);
-			origVertX = newVertX;
-			origVertY = newVertY;			
-			printf("X: %f, Y: %f", origVertX[10],origVertY[10]);
+			//printf("X: %f, Y: %f\n", newVertX[10],newVertY[10]);
+			//printf("X: %f, Y: %f\n", origVertX[10],origVertY[10]);
+			//origVertX = newVertX;
+			//origVertY = newVertY;			
+			//printf("X: %f, Y: %f", origVertX[10],origVertY[10]);
 	}
 	
 	void FillNNList(int iList)
@@ -142,21 +146,31 @@ public:
 		}
 		qsort(tempList, numVerts - 1, sizeof(distSort), nnComp);		
 		int count2 = 0;
-
+		int count3 = 0;
 		for (int i = 0; i < numNN; i++)
 		{		
+			
+
 			if (tempList[i].index != -1)
 			{	
 				nearestNeighbour _nn;
 				_nn.nnMask = 0;
-				_nn.vectIndex = tempList[i].index / _VECSIZE;
+				_nn.vectIndex = tempList[i].index / _VECSIZE;;
 				int remainder = tempList[i].index % _VECSIZE;
+			
 				int edgeDistCount = 0;
-				for(int j = _nn.vectIndex * _VECSIZE; j < (_nn.vectIndex * _VECSIZE) + _VECSIZE; j++ )
-				{
-					edgeDist[iList][(i*_VECSIZE)+edgeDistCount] = CalcEdgeDist(iList,j);
-					edgeDistCount++;
-				}
+				//fills edgedistance - adds every value contained in a vectorIndex, not just nearest neighbours
+				for(int j = _nn.vectIndex* _VECSIZE; j < (_nn.vectIndex * _VECSIZE) + _VECSIZE; j++ )
+					{
+						edgeDist[iList][(count3*_VECSIZE)+edgeDistCount] = CalcEdgeDist(iList,j);
+						nnList[iList][(count3*_VECSIZE)+edgeDistCount] = j;
+						//printf("%f \n", CalcEdgeDist(iList,j));
+						//printf("%d, %d: %f \n",iList,(count3*_VECSIZE)+edgeDistCount),edgeDist[iList][(count3*_VECSIZE)+edgeDistCount];
+						edgeDistCount++;
+					}
+				count3++;
+					
+				
 				_nn.nnMask |=  1UL << remainder;
 				tempList[i].index = -1;
 				for (int j = 0; j < numNN; j++)
@@ -243,10 +257,9 @@ public:
 		return dist;
 	}
 
-	int CalcEdgeDist(int pointA, int pointB)
+	float CalcEdgeDist(int pointA, int pointB)
 	{
-		return distanceFunc(vertX[pointA], vertY[pointA], vertX[pointB], vertY[pointB]);
-		//return 1;
+		return (float)distanceFunc(vertX[pointA], vertY[pointA], vertX[pointB], vertY[pointB]);
 	}
 
 
@@ -393,6 +406,7 @@ public:
 
 		numNN = nNearNeighbours;
 		neighbourVectors = (nearestNeighbour**)malloc(numVerts * sizeof(nearestNeighbour**));
+		nnList = (int**)malloc(numVerts * sizeof(int*));
 		edgeDist = (float**)malloc( numVerts * sizeof( float* ) );
 
 		for ( int i = 0; i < numVerts; i++ )
@@ -403,9 +417,14 @@ public:
 		{
 			//each entry in nnList is a pointer-to-int array of numNN * 4
 			//nnList is filled with 20 nearest neighbours of each city
-			//nnList[i] = (int*)malloc( numNN * sizeof( int ) );
+			nnList[i] = (int*)malloc( numNN * sizeof( int ) * _VECSIZE );
 			
   			FillNNList( i );
+			
+			  /*for(int j = 0; j < numNN * _VECSIZE; j++)
+			  {
+				  printf("\n%d, %d: %f",i,j,edgeDist[i][j]);
+			  }*/
   			
 			
 		}

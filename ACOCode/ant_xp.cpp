@@ -35,54 +35,98 @@ void Ant::Init( AntSystem *as, int *seeds )
 	ones.set1(f1);
 }
 
-int Ant::iRoulette( float *weights, int *tabu, int nWeights )
+int Ant::iRoulette( float *weights, int *tabu, int currentIndex, TSP *tsp)
 {
+	int next;
+	int tryCount = 1;
+	bool validFound = false;
 
-	ALIGN(float indexSeed[_VECSIZE]) = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, };
+	while(validFound == false)
+	{
+
+		bool tooHigh = (currentIndex+tryCount) >= tsp->numVerts;
+		bool tooLow = (currentIndex-tryCount) < 0;
+		int upRemainder = (currentIndex + tryCount) % _VECSIZE;
+		int downRemainder = (currentIndex - tryCount) % _VECSIZE;
+		int upTabu = tabu[(currentIndex+tryCount)/_VECSIZE];
+		int downTabu = tabu[(currentIndex-tryCount)/_VECSIZE];
+		int upValid = ((upTabu >> upRemainder) & 1);
+		int downValid = ((downTabu >> downRemainder) & 1);
+
+		//if both indexes are valid
+		if(!tooHigh && !tooLow && downValid == 0 && upValid ==0)
+		{
+			int weightUp = tsp->CalcEdgeDist(currentIndex, currentIndex+tryCount);
+			int weightDown = tsp->CalcEdgeDist(currentIndex, currentIndex-tryCount);
+			
+			
+			//if((tabuValue >> upRemainder) & 1)
+			//{
+			//	printf("\n%d",(tabuValue >> upRemainder) & 1);
+			//}
+			if(weightUp > weightDown)
+			{
+				if (!((upTabu >> upRemainder) & 1))
+				{
+					next = currentIndex+tryCount;
+					validFound = true;
+				}
+			}
+
+			else
+			{
+				if (!((downTabu >> downRemainder) & 1))
+				{
+					
+					next = currentIndex-tryCount;
+					validFound = true;
+				}
+			}
+		}
+
+		//if current city index is the same as numVerts
+		else if ((tooHigh && ! tooLow) || (!tooLow && downValid == 0))
+		{
+			if (!((downTabu >> downRemainder) & 1))
+				{
+					next = currentIndex-tryCount;
+					validFound = true;
+				}
+		}
+
+		//if current city index is 0
+		else if ((tooLow && ! tooHigh) || (!tooHigh && upValid == 0))
+		{
+			if (!((upTabu >> upRemainder) & 1))
+				{
+					next = currentIndex+tryCount;
+					
+					validFound = true;
+				}
+		}
+		tryCount++;
+	}
+
+	
+	return next;
+	
+	
+}
+
+int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnList, int numNN)
+{
+	ALIGN(float indexSeed[_VECSIZE]) = { 0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f};
 	ALIGN(float indexStep[_VECSIZE]) = { 8.0f, 8.0f, 8.0f, 8.0f, 8.0f, 8.0f, 8.0f, 8.0f};
-	ALIGN(float minusOnes[_VECSIZE]) = { -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f};
 
+	ALIGN(float minusOnes[_VECSIZE]) = { -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f };
+	
+	ALIGN(float nextIndicesArray[_VECSIZE]) = {0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f};
 	Vector minusOne;
 	minusOne.load(minusOnes);
 	Vector runningIndex;
 	runningIndex.load(indexSeed);
 	Vector delta16;
 	delta16.load( indexStep );
-	Vector curIndices = minusOne;
-	Vector curWeights = minusOne;
- 	Vector tabuMask = int2mask( tabu[0] );
-	for ( int i = 0; i < nWeights/_VECSIZE; i++ )
-	{
-		ALIGN(float defaultVal[_VECSIZE]) = {0.5f,0.5f,0.5f,0.5f,0.5f,0.5f,0.5f,0.5f};
-		Vector nextWeights;
-		//nextWeights.load(weights + i * _VECSIZE);
-		nextWeights.load(defaultVal);
-		Vector nextIndices =  runningIndex;
-		Vector randoms = vecRandom(rC0,rC1,factor,rSeed);
-		
-		
-		nextWeights = nextWeights * randoms;
-		nextWeights = mask_mov( nextWeights, tabuMask, minusOne );
-
-		tabuMask = int2mask( tabu[i+1] );
-		maxLocStep( curWeights, curIndices, nextWeights, nextIndices );
-		runningIndex = runningIndex + delta16 ;
-	}
-	// now reduce the elements of curWeights
-	int reduced = reduceMax( curWeights, curIndices );
-	return reduced;
-}
-
-int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnList, int numNN)
-{
-	ALIGN(float indexSeed[_VECSIZE]) = { 0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f};
-	ALIGN(float minusOnes[_VECSIZE]) = { -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f };
-
-
-	Vector minusOne;
-	minusOne.load(minusOnes);
-	Vector baseIndex;
-	baseIndex.load(indexSeed);
 	Vector curIndices = minusOne;
 	Vector curWeights = minusOne;
 
@@ -93,21 +137,20 @@ int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnL
 		{
 
 			Vector randoms = vecRandom(rC0,rC1,factor,rSeed);
-			Vector nextIndices;		
+			Vector nextIndices = runningIndex;	
 			Vector tabuMask = int2mask(tabu[nnList[i].vectIndex]);					
 			Vector nnMask = int2mask(nnList[i].nnMask);
 		
 			Vector nextWeights;
-			nextWeights.load(weights + nnList[i].vectIndex *_VECSIZE);
+			nextWeights.load(weights + (i *_VECSIZE));
 			//nextWeights.maskLoad(minusOne, nnMask, weights + nnList[i].vectIndex *16);
 			nextWeights = nextWeights * randoms;
 			nextWeights = mask_mov(minusOne, nnMask, nextWeights);
 			nextWeights = mask_mov(nextWeights, tabuMask, minusOne);
-		
-			float offset = _VECSIZE*nnList[i].vectIndex;
-			nextIndices.set1(offset);	
-			nextIndices =  nextIndices + baseIndex;
+
+			
 			maxLocStep(curWeights, curIndices, nextWeights, nextIndices);
+			runningIndex = runningIndex + delta16 ;
 
 		}
 		else
@@ -132,6 +175,14 @@ int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnL
 void Ant::ConstructTour( void )
 {
 	//printf("construct tour");
+	/*for(int i = 0; i < 20; i++)
+	{
+		for(int j = 0; j < 20; j++)
+		{
+		printf("\n%d, %d:%f",m_as->m_weights[i][j]);
+		}
+	}*/
+
 	int i, j;
 	tourDist = 0.0f;
 	nTour = 0;
@@ -159,25 +210,43 @@ void Ant::ConstructTour( void )
 			tabu[i/_VECSIZE] |= (1<<jTabu);
 		}
 	}
+	int fallbackCount = 0;
 	//std::cout << "new tour \n";
 	for ( i = 1; i < tsp->numVerts; i++ )
 	{
 #pragma noinline
+		
 		tour[i] = csRoulette(m_as->m_weights[tour[i - 1]], tabu, nVertPadded, tsp->neighbourVectors[tour[i - 1]], numNN);
+		
 		//std::cout << tour[i] << "\n";
 		if (tour[i] == -1)
 		{
-			tour[i] = iRoulette(m_as->m_weights[tour[i - 1]], tabu, nVertPadded);
+			tour[i] = iRoulette(m_as->m_weights[tour[i - 1]], tabu, tour[i-1], tsp);
+			tourDist += tsp->CalcEdgeDist(tour[i],tour[i-1]);
+			
+			printf("\n%d: %d | DISTANCE: %f | DIFFERENCE: %f | FALLBACK %d",i,tour[i],tourDist,tsp->CalcEdgeDist(tour[i],tour[i-1]),++fallbackCount);
 		}
+
+		else
+		{
+			tourDist += tsp->edgeDist[tour[i-1]][tour[i]];
+			int origTour = tour[i];
+			tour[i] = tsp->nnList[tour[i - 1]][tour[i]];
+			printf("\n%d: %d | DISTANCE: %f| DIFFERENCE: %f",i,tour[i],tourDist,tsp->edgeDist[tour[i-1]][origTour]);
+			
+
+		}
+		
 		
 		int iTabu = (tour[i]/_VECSIZE);
 		int jTabu = tour[i]%_VECSIZE;
 		//printf("\n%d",iTabu);fflush(stdout);
 		tabu[iTabu] |= (1<<jTabu);
 		//printf("\n%d, %d, %d",i,tour[i],tour[i-1]);fflush(stdout);
-		tourDist += tsp->edgeDist[tour[i]][tour[i-1]];
+		
 	}
-	tourDist += tsp->edgeDist[tour[0]][tour[tsp->numVerts-1]];
+	tourDist += tsp->CalcEdgeDist(tour[0],tour[tsp->numVerts-1]);
+	printf("\nFINAL DIST: %f",tourDist);
 }
 
 

@@ -134,10 +134,12 @@ void AntSystem::Clear( void )
 	//memcpy( m_shortestTour, tour, m_pTSP->numVerts * sizeof( int ) );
 	//m_shortestDist = aDist;
 	free(tour);
-
-	val = 1.0f/((float)aDist*rho);
-	//printf("\nnnTour: %f Initial pheromone: %f\n",aDist,val);fflush(stdout);
 */
+	
+	val = 1.0f/(m_pTSP->nnDist*rho);
+	
+	printf("\nnnTour: %f Initial pheromone: %f\n",m_pTSP->nnDist,val);fflush(stdout);
+
 
 	//from 0 to numVerts
 	for ( i = 0; i < m_pTSP->numVerts; i++ )
@@ -148,13 +150,24 @@ void AntSystem::Clear( void )
 	//from 0 to numverts
 		for ( j = 0; j < m_pTSP->numNN*_VECSIZE; j++ )
 		{
+			if(m_pTSP->edgeDist[i][j] != 0)
+			{
 			//pheromone value is set
-			SetPheromoneValue(i,j,0.5);
+			val = 1.0f/(m_pTSP->nnDist*rho);
+			SetPheromoneValue(i,j,val, false);
 
 			//inverse square of edge distances
 			m_iDistSq[i][j] = 1.0f/(m_pTSP->edgeDist[i][j]*m_pTSP->edgeDist[i][j]);
 			//pheromone / edgeDist^2
 			m_weights[i][j] = (GetPheromoneValue(i,j)/(m_pTSP->edgeDist[i][j]*m_pTSP->edgeDist[i][j]))*1000;
+			
+			//printf("%d, %d: %f \n",i,j,m_weights[i][j]);
+			}
+
+			//else
+			//{
+			//	break;
+			//}
 
 		}
 	}
@@ -182,9 +195,9 @@ void AntSystem::Evaporate( void )
 #endif
 	for ( int i = 0; i < nVerts; i++ )
 	{
-	  for ( int j = 0; j < nVerts; j++ )
+	  for ( int j = 0; j < m_pTSP -> numNN * _VECSIZE; j++ )
 	    {
-			SetPheromoneValue(i,j,GetPheromoneValue(i,j) * (1.0f - rho));
+			SetPheromoneValue(i,j,GetPheromoneValue(i,j) * (1.0f - rho), false);
 	    }
 	}
 }
@@ -230,7 +243,7 @@ void AntSystem::DepositFromTour( int *tour, float tourLength )
 	//adds pheromone to the specified edges
 	for ( int i = 0; i < m_pTSP->numVerts; i++ )
 	{
-		SetPheromoneValue(tour[i],tour[(i+1)%m_pTSP->numVerts],deltaPher);
+		SetPheromoneValue(tour[i],tour[(i+1)%m_pTSP->numVerts],deltaPher, true);
 		//m_pher[tour[i]][tour[(i+1)%m_pTSP->numVerts]] += deltaPher;
 		//m_pher[tour[(i+1)%m_pTSP->numVerts]][tour[i]] += deltaPher;
 	}
@@ -376,10 +389,10 @@ void AntSystem::Solve( int maxIterations, int maxStagnantIterations, bool contin
 	{
 		Iterate();
 		//std::cout << i << "\n";
-		/*if (i % 100 == 0)
+		if (i % 100 == 0)
 		{
 			printf("\nIteration: %d, Shortest Distance: %f, Timers: %f %f", i, m_shortestDist, timers->GetTimer(0), timers->GetTimer(1));fflush(stdout);
-		}*/
+		}
 		
 
 		if ( m_shortestDist < shortestSoFar )
@@ -406,13 +419,57 @@ void AntSystem::Solve( int maxIterations, int maxStagnantIterations, bool contin
 //	CalcStagnationMetrics();
 }
 
-int AntSystem::GetPheromoneValue(int pointA, int pointB)
+float AntSystem::GetPheromoneValue(int pointA, int pointB)
 {
 	return m_pher[pointA][pointB];
 }
 
-void AntSystem::SetPheromoneValue(int pointA, int pointB, int deltaPher)
+void AntSystem::SetPheromoneValue(int pointA, int pointB, float deltaPher, bool afterTour)
 {
-	m_pher[pointA][pointB] += deltaPher;
-	m_pher[pointB][pointA] += deltaPher;
+	bool aFound = false;
+	bool bFound = false;
+	int aPosition;
+	int bPosition;
+	int** nnList = m_pTSP->nnList;
+	int _numNN = m_pTSP->numNN;
+
+	if(afterTour == true)
+	{
+		for(int i = 0; i < _numNN; i++)
+		{
+			if(nnList[pointA][i] == pointB)
+			{
+				bFound = true;
+				bPosition = i;
+			}
+
+			if(nnList[pointB][i] == pointA)
+			{
+				aFound = true;
+				aPosition = i;
+			}
+
+			if(aFound && bFound)
+			{
+				break;
+			}
+		}
+
+		if(bFound)
+		{
+			m_pher[pointA][bPosition] += deltaPher;
+		}
+
+		if(aFound)
+		{
+			m_pher[pointB][aPosition] += deltaPher;
+		}
+	}
+
+	else
+	{
+		m_pher[pointA][pointB] += deltaPher;
+		m_pher[pointB][pointA] += deltaPher;
+		
+	}
 }

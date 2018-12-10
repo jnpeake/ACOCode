@@ -44,20 +44,20 @@ int Ant::iRoulette( float *weights, int *tabu, int currentIndex, TSP *tsp)
 	while(validFound == false)
 	{
 
-		bool tooHigh = (currentIndex+tryCount) >= tsp->numVerts;
-		bool tooLow = (currentIndex-tryCount) < 0;
-		int upRemainder = (currentIndex + tryCount) % _VECSIZE;
-		int downRemainder = (currentIndex - tryCount) % _VECSIZE;
-		int upTabu = tabu[(currentIndex+tryCount)/_VECSIZE];
-		int downTabu = tabu[(currentIndex-tryCount)/_VECSIZE];
+		int upIndex = (currentIndex+tryCount)%tsp->numVerts;
+		int downIndex = (currentIndex+tsp->numVerts-tryCount)%tsp->numVerts;
+		int upRemainder = upIndex % _VECSIZE;
+		int downRemainder = downIndex % _VECSIZE;
+		int upTabu = tabu[upIndex/_VECSIZE];
+		int downTabu = tabu[downIndex/_VECSIZE];
 		int upValid = ((upTabu >> upRemainder) & 1);
 		int downValid = ((downTabu >> downRemainder) & 1);
 
 		//if both indexes are valid
-		if(!tooHigh && !tooLow && downValid == 0 && upValid ==0)
+		if(downValid == 0 && upValid ==0)
 		{
-			int weightUp = tsp->CalcEdgeDist(currentIndex, currentIndex+tryCount);
-			int weightDown = tsp->CalcEdgeDist(currentIndex, currentIndex-tryCount);
+			int weightUp = tsp->CalcEdgeDist(currentIndex, upIndex);
+			int weightDown = tsp->CalcEdgeDist(currentIndex, downIndex);
 			
 			
 			//if((tabuValue >> upRemainder) & 1)
@@ -66,43 +66,28 @@ int Ant::iRoulette( float *weights, int *tabu, int currentIndex, TSP *tsp)
 			//}
 			if(weightUp > weightDown)
 			{
-				if (!((upTabu >> upRemainder) & 1))
-				{
-					next = currentIndex+tryCount;
-					validFound = true;
-				}
+				next = upIndex;
+				validFound = true;
 			}
 
 			else
 			{
-				if (!((downTabu >> downRemainder) & 1))
-				{
 					
-					next = currentIndex-tryCount;
-					validFound = true;
-				}
+				next = downIndex;
+				validFound = true;
 			}
 		}
 
-		//if current city index is the same as numVerts
-		else if ((tooHigh && ! tooLow) || (!tooLow && downValid == 0))
+		else if(downValid == 0)
 		{
-			if (!((downTabu >> downRemainder) & 1))
-				{
-					next = currentIndex-tryCount;
-					validFound = true;
-				}
+			next = downIndex;
+			validFound = true;
 		}
 
-		//if current city index is 0
-		else if ((tooLow && ! tooHigh) || (!tooHigh && upValid == 0))
+		else if (upValid ==0)
 		{
-			if (!((upTabu >> upRemainder) & 1))
-				{
-					next = currentIndex+tryCount;
-					
-					validFound = true;
-				}
+			next = upIndex;
+			validFound = true;
 		}
 		tryCount++;
 	}
@@ -224,7 +209,7 @@ void Ant::ConstructTour( void )
 			tour[i] = iRoulette(m_as->m_weights[tour[i - 1]], tabu, tour[i-1], tsp);
 			tourDist += tsp->CalcEdgeDist(tour[i],tour[i-1]);
 			
-			printf("\n%d: %d | DISTANCE: %f | DIFFERENCE: %f | FALLBACK %d",i,tour[i],tourDist,tsp->CalcEdgeDist(tour[i],tour[i-1]),++fallbackCount);
+			//printf("\n%d: %d | DISTANCE: %f | DIFFERENCE: %f | FALLBACK %d",i,tour[i],tourDist,tsp->CalcEdgeDist(tour[i],tour[i-1]),++fallbackCount);
 		}
 
 		else
@@ -232,10 +217,12 @@ void Ant::ConstructTour( void )
 			tourDist += tsp->edgeDist[tour[i-1]][tour[i]];
 			int origTour = tour[i];
 			tour[i] = tsp->nnList[tour[i - 1]][tour[i]];
-			printf("\n%d: %d | DISTANCE: %f| DIFFERENCE: %f",i,tour[i],tourDist,tsp->edgeDist[tour[i-1]][origTour]);
+			//printf("\n%d: %d | DISTANCE: %f| DIFFERENCE: %f",i,tour[i],tourDist,tsp->edgeDist[tour[i-1]][origTour]);
 			
 
 		}
+
+		
 		
 		
 		int iTabu = (tour[i]/_VECSIZE);
@@ -246,7 +233,7 @@ void Ant::ConstructTour( void )
 		
 	}
 	tourDist += tsp->CalcEdgeDist(tour[0],tour[tsp->numVerts-1]);
-	printf("\nFINAL DIST: %f",tourDist);
+	//printf("\nFINAL DIST: %f",tourDist);
 }
 
 

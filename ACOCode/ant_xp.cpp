@@ -167,7 +167,7 @@ void Ant::ConstructTour( void )
 		printf("\n%d, %d:%f",m_as->m_weights[i][j]);
 		}
 	}*/
-
+	int fallbackTotal = 0;
 	int i, j;
 	tourDist = 0.0f;
 	nTour = 0;
@@ -208,8 +208,9 @@ void Ant::ConstructTour( void )
 		{
 			tour[i] = iRoulette(m_as->m_weights[tour[i - 1]], tabu, tour[i-1], tsp);
 			tourDist += tsp->CalcEdgeDist(tour[i],tour[i-1]);
+			fallbackTotal += tsp->CalcEdgeDist(tour[i],tour[i-1]);
 			
-			//printf("\n%d: %d | DISTANCE: %f | DIFFERENCE: %f | FALLBACK %d",i,tour[i],tourDist,tsp->CalcEdgeDist(tour[i],tour[i-1]),++fallbackCount);
+			printf("\n%d: %d | DISTANCE: %f | DIFFERENCE: %f | FALLBACK %d",i,tour[i],tourDist,tsp->CalcEdgeDist(tour[i],tour[i-1]),++fallbackCount);
 		}
 
 		else
@@ -217,7 +218,7 @@ void Ant::ConstructTour( void )
 			tourDist += tsp->edgeDist[tour[i-1]][tour[i]];
 			int origTour = tour[i];
 			tour[i] = tsp->nnList[tour[i - 1]][tour[i]];
-			//printf("\n%d: %d | DISTANCE: %f| DIFFERENCE: %f",i,tour[i],tourDist,tsp->edgeDist[tour[i-1]][origTour]);
+			printf("\n%d: %d | DISTANCE: %f| DIFFERENCE: %f",i,tour[i],tourDist,tsp->edgeDist[tour[i-1]][origTour]);
 			
 
 		}
@@ -233,7 +234,8 @@ void Ant::ConstructTour( void )
 		
 	}
 	tourDist += tsp->CalcEdgeDist(tour[0],tour[tsp->numVerts-1]);
-	//printf("\nFINAL DIST: %f",tourDist);
+	printf("\nFINAL DIST: %f",tourDist);
+	printf("\nTOTAL FALLBACK WEIGHT: %f",fallbackTotal);
 }
 
 

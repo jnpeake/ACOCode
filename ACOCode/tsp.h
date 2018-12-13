@@ -262,6 +262,13 @@ public:
 		return (float)distanceFunc(vertX[pointA], vertY[pointA], vertX[pointB], vertY[pointB]);
 	}
 
+	/*float CalcEdgeDistSquared(int x0, int y0, int x1, int y1)
+	{
+		float d = (x0-x1)*(x0-x1) + (y0-y1)*(y0-y1);
+		
+		return (int)(d+0.5f);
+	}*/
+
 
 	void Init( const char *fileName, int nNearNeighbours )
 	{

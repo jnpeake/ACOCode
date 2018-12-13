@@ -289,7 +289,7 @@ void AntSystem::Deposit( void )
 #endif
 	for ( int i = 0; i < m_pTSP->numVerts; i++ )
 	{
- 		for ( int j = 0; j < m_pTSP->numVerts; j+=_VECSIZE )
+ 		for ( int j = 0; j < m_pTSP->numNN*_VECSIZE; j+=_VECSIZE )
 		{
 			
 			Vector pher;

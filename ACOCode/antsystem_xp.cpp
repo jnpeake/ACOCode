@@ -40,10 +40,10 @@ void AntSystem::Init( int nAnts, TSP *tsp, int seed )
 	m_fNN = (float **)ALLOC( (m_pTSP->numVerts * sizeof( float* )) );
 
 	// for Xeon Phi, each row of the array needs to be padded to a whole number * _VECSIZE float and 64-byte aligned.
-	int nRowAlloc = m_pTSP->numNN*_VECSIZE;
+	int nRowAlloc = m_pTSP->matrixSize;
 
-	//if ( nRowAlloc%_VECSIZE )
-		//nRowAlloc = _VECSIZE * (nRowAlloc/_VECSIZE + 1 );
+	if ( nRowAlloc%_VECSIZE )
+		nRowAlloc = _VECSIZE * (nRowAlloc/_VECSIZE + 1 );
 
 	for ( i = 0; i < m_pTSP->numVerts; i++ )
 	{
@@ -149,7 +149,7 @@ void AntSystem::Clear( void )
 
 		nearestNeighbour* nn = m_pTSP->neighbourVectors[i];
 	//from 0 to numverts
-		for ( j = 0; j < m_pTSP->numNN*_VECSIZE; j++ )
+		for ( j = 0; j < m_pTSP->matrixSize; j++ )
 		{
 			if(m_pTSP->edgeDist[i][j] != 0)
 			{
@@ -196,7 +196,7 @@ void AntSystem::Evaporate( void )
 #endif
 	for ( int i = 0; i < nVerts; i++ )
 	{
-	  for ( int j = 0; j < m_pTSP -> numNN * _VECSIZE; j++ )
+	  for ( int j = 0; j < m_pTSP -> matrixSize; j++ )
 	    {
 			SetPheromoneValue(i,j,GetPheromoneValue(i,j) * (1.0f - rho), false);
 	    }
@@ -320,7 +320,7 @@ void AntSystem::Deposit( void )
 #endif
 	for ( int i = 0; i < m_pTSP->numVerts; i++ )
 	{
- 		for ( int j = 0; j < m_pTSP->numNN*_VECSIZE; j+=_VECSIZE )
+ 		for ( int j = 0; j < m_pTSP->matrixSize; j+=_VECSIZE )
 		{
 			
 			Vector pher;

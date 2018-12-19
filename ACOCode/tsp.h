@@ -55,6 +55,7 @@ public:
 	int **nnIndexes;
 	int numNN;
 	int nnHist[32] = {};
+	int matrixSize;
 	nearestNeighbour **neighbourVectors;
 	nearestNeighbour *newNN;
 	int (*distanceFunc)(float, float, float, float);
@@ -136,6 +137,7 @@ public:
 		nearestNeighbour *newNN = (nearestNeighbour*)malloc(numNN * sizeof(nearestNeighbour));
 		distSort *tempList = (distSort*)malloc((numVerts - 1) * sizeof(distSort));
 		
+
 			
 		int count = 0;
 		for (int i = 0; i < numVerts; i++)
@@ -450,6 +452,14 @@ public:
 		//printf("X: %f, Y: %f", vertX[0],vertY[0]);
 
 		numNN = nNearNeighbours;
+		if(numNN * _VECSIZE < numVerts)
+		{
+			matrixSize = numNN*_VECSIZE;
+		}
+		else
+		{
+			matrixSize = numVerts;
+		}
 		neighbourVectors = (nearestNeighbour**)malloc(numVerts * sizeof(nearestNeighbour**));
 		nnList = (int**)malloc(numVerts * sizeof(int*));
 		edgeDist = (float**)malloc( numVerts * sizeof( float* ) );
@@ -463,10 +473,10 @@ public:
 		#endif
 		for ( i = 0; i < numVerts; i++ )
 		{
-			edgeDist[i] = (float*)malloc( (numNN * _VECSIZE) * sizeof( float ) );
+			edgeDist[i] = (float*)malloc( (matrixSize) * sizeof( float ) );
 			//each entry in nnList is a pointer-to-int array of numNN * 4
 			//nnList is filled with 20 nearest neighbours of each city
-			nnList[i] = (int*)malloc( numNN * sizeof( int ) * _VECSIZE );
+			nnList[i] = (int*)malloc( (matrixSize) * sizeof( int ) );
 			nnIndexes[i] = (int*)malloc( numNN * sizeof( int ) );
 
 			

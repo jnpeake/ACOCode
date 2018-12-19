@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <vector>
+#include <omp.h>
 #include "platform.h"
 
 typedef struct
@@ -51,11 +52,13 @@ public:
 	float nnDist;
 	int numVerts;
 	int **nnList;
+	int **nnIndexes;
 	int numNN;
 	int nnHist[32] = {};
 	nearestNeighbour **neighbourVectors;
 	nearestNeighbour *newNN;
 	int (*distanceFunc)(float, float, float, float);
+	float (*distanceSquaredFunc)(float,float,float,float);
 	
 
 	void CalcNNTour(float *&origVertX, float *&origVertY)
@@ -145,6 +148,10 @@ public:
 			}
 		}
 		qsort(tempList, numVerts - 1, sizeof(distSort), nnComp);		
+		for(int i = 0; i < numNN; i++)
+		{
+			nnIndexes[iList][i] = tempList[i].index;
+		}
 		int count2 = 0;
 		int count3 = 0;
 		for (int i = 0; i < numNN; i++)
@@ -227,6 +234,27 @@ public:
 			return td;
 	}
 
+	static float EucSqDistance( float x0, float y0, float x1, float y1 )
+	{
+		return (x0-x1)*(x0-x1) + (y0-y1)*(y0-y1);
+	}
+
+	static float CeilSqDistance(float x0, float y0, float x1, float y1)
+	{
+		return (x0 - x1)*(x0 - x1) + (y0 - y1)*(y0 - y1);
+	}
+
+	static int AttSqDistance(float x0, float y0, float x1, float y1)
+	{
+		float d = (x0 - x1)*(x0 - x1) + (y0 - y1)*(y0 - y1);
+		int td = ((int)(d+0.5f));
+
+		if (td < d)
+			return td + 1;
+		else
+			return td;
+	}
+
 	static int GeoDistance(float x0, float y0, float x1, float y1)
 	{
 		float lat0, long0, lat1, long1;
@@ -262,12 +290,20 @@ public:
 		return (float)distanceFunc(vertX[pointA], vertY[pointA], vertX[pointB], vertY[pointB]);
 	}
 
-	/*float CalcEdgeDistSquared(int x0, int y0, int x1, int y1)
+	float CalcEdgeDistSquared(int x0, int y0, int x1, int y1)
 	{
-		float d = (x0-x1)*(x0-x1) + (y0-y1)*(y0-y1);
-		
-		return (int)(d+0.5f);
-	}*/
+		return (float)distanceSquaredFunc(x0,y0,x1,y1);
+	}
+
+	int getXFromPoint(int point)
+	{
+		return vertX[point];
+	}
+
+	int getYFromPoint(int point)
+	{
+		return vertY[point];
+	}
 
 
 	void Init( const char *fileName, int nNearNeighbours )
@@ -337,9 +373,11 @@ public:
 			return;
 		case EDGE_WEIGHT_EUC2D:
 			distanceFunc = &EucDistance;
+			distanceSquaredFunc = &EucSqDistance;
 			break;
 		case EDGE_WEIGHT_CEIL2D:
 			distanceFunc = &CeilDistance;
+			distanceSquaredFunc = &CeilSqDistance;
 			break;
 		case EDGE_WEIGHT_ATT:
 			distanceFunc = &AttDistance;
@@ -415,16 +453,22 @@ public:
 		neighbourVectors = (nearestNeighbour**)malloc(numVerts * sizeof(nearestNeighbour**));
 		nnList = (int**)malloc(numVerts * sizeof(int*));
 		edgeDist = (float**)malloc( numVerts * sizeof( float* ) );
+		nnIndexes = (int**)malloc(numVerts * sizeof(int*));
 
-		for ( int i = 0; i < numVerts; i++ )
-			edgeDist[i] = (float*)malloc( (numNN * _VECSIZE) * sizeof( float ) );
+		
 
 
+		#ifdef USE_OMP
+		#pragma omp parallel for
+		#endif
 		for ( i = 0; i < numVerts; i++ )
 		{
+			edgeDist[i] = (float*)malloc( (numNN * _VECSIZE) * sizeof( float ) );
 			//each entry in nnList is a pointer-to-int array of numNN * 4
 			//nnList is filled with 20 nearest neighbours of each city
 			nnList[i] = (int*)malloc( numNN * sizeof( int ) * _VECSIZE );
+			nnIndexes[i] = (int*)malloc( numNN * sizeof( int ) );
+
 			
   			FillNNList( i );
 			

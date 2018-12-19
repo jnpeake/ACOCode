@@ -5,6 +5,7 @@
 
 #include "vector.h"
 #include "platform.h"
+#include "localsearch.h"
 #include "tsp.h"
 #include "list"
 
@@ -23,8 +24,11 @@ public:
 	int *remaining;
 	int nTour;
 	AntSystem *m_as;
+	LocalSearch *localSearch;
 
 	int *rIndices;
+	RanluxGenerator rlgen;
+
 
 	// random number generator data
 
@@ -39,7 +43,7 @@ public:
 
 	int *tabu; // tabu list
 
-	int iRoulette( float *weights, int *tabu, int currentIndex, TSP *tsp);
+	int fallback( float *weights, int *tabu, int currentIndex, TSP *tsp);
 	int csRoulette(float *weights, int *tabu, int nWeights, nearestNeighbour *nnList, int numNN);
 
 

@@ -1,5 +1,7 @@
 #include "ant_xp.h"
 #include "antsystem_xp.h"
+#include "ranluxgen.h"
+
 #include "tsp.h"
 #include <cstdio> 
 #include <cstdlib>
@@ -9,11 +11,15 @@ void Ant::Init( AntSystem *as, int *seeds )
 {
 
 	m_as = as;
+	TSP *tsp = m_as->GetTSP();
 	remaining = (int*)ALLOC( (m_as->GetTSP()->numVerts * sizeof(int)) );
-	tour = (int*)ALLOC( (m_as->GetTSP()->numVerts * sizeof(int)) );
+	tour = (int*)ALLOC( ((m_as->GetTSP()->numVerts+1) * sizeof(int)) ); //+1 for local search code
 	nTour = 0;
 
 	rIndices = (int*)ALLOC( m_as->GetTSP()->numVerts * sizeof(int) );
+	rlgen.init(seeds[0] );
+	localSearch = new LocalSearch(tsp, rlgen, 32);
+
 
 	// allocate the index and tabu arrays
 	nVertPadded = m_as->GetTSP()->numVerts;
@@ -34,8 +40,8 @@ void Ant::Init( AntSystem *as, int *seeds )
 	float f1 = 1.0f;
 	ones.set1(f1);
 }
-
-int Ant::iRoulette( float *weights, int *tabu, int currentIndex, TSP *tsp)
+/*
+int Ant::fallback( float *weights, int *tabu, int currentIndex, TSP *tsp)
 {
 	int next;
 	int tryCount = 1;
@@ -96,6 +102,31 @@ int Ant::iRoulette( float *weights, int *tabu, int currentIndex, TSP *tsp)
 	return next;
 	
 	
+}*/
+
+int Ant::fallback( float *weights, int *tabu, int currentIndex, TSP *tsp)
+{
+	float* vertX = tsp->vertX;
+	float* vertY = tsp->vertY;
+	int currentX = vertX[currentIndex];
+	int currentY = vertY[currentIndex];
+	bool nextFound = false;
+	int tryCount = 10;
+	float shortestDist = 3.4e+38;
+	int nextPoint;
+
+
+	for(int i = 0; i < tsp-> numVerts; i++)
+	{
+		float dist = tsp->CalcEdgeDistSquared(vertX[i],vertY[i],currentX, currentY);
+		if( dist < shortestDist && !((tabu[i/_VECSIZE] >> i % _VECSIZE) & 1))
+		{
+			shortestDist = dist;
+			nextPoint = i;
+		}
+	}
+
+	return nextPoint;
 }
 
 int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnList, int numNN)
@@ -206,11 +237,11 @@ void Ant::ConstructTour( void )
 		//std::cout << tour[i] << "\n";
 		if (tour[i] == -1)
 		{
-			tour[i] = iRoulette(m_as->m_weights[tour[i - 1]], tabu, tour[i-1], tsp);
+			tour[i] = fallback(m_as->m_weights[tour[i - 1]], tabu, tour[i-1], tsp);
 			tourDist += tsp->CalcEdgeDist(tour[i],tour[i-1]);
 			fallbackTotal += tsp->CalcEdgeDist(tour[i],tour[i-1]);
 			
-			printf("\n%d: %d | DISTANCE: %f | DIFFERENCE: %f | FALLBACK %d",i,tour[i],tourDist,tsp->CalcEdgeDist(tour[i],tour[i-1]),++fallbackCount);
+			//printf("\n%d: %d | DISTANCE: %f | DIFFERENCE: %f | FALLBACK %d",i,tour[i],tourDist,tsp->CalcEdgeDist(tour[i],tour[i-1]),++fallbackCount);
 		}
 
 		else
@@ -218,7 +249,7 @@ void Ant::ConstructTour( void )
 			tourDist += tsp->edgeDist[tour[i-1]][tour[i]];
 			int origTour = tour[i];
 			tour[i] = tsp->nnList[tour[i - 1]][tour[i]];
-			printf("\n%d: %d | DISTANCE: %f| DIFFERENCE: %f",i,tour[i],tourDist,tsp->edgeDist[tour[i-1]][origTour]);
+			//printf("\n%d: %d | DISTANCE: %f| DIFFERENCE: %f",i,tour[i],tourDist,tsp->edgeDist[tour[i-1]][origTour]);
 			
 
 		}
@@ -234,8 +265,20 @@ void Ant::ConstructTour( void )
 		
 	}
 	tourDist += tsp->CalcEdgeDist(tour[0],tour[tsp->numVerts-1]);
-	printf("\nFINAL DIST: %f",tourDist);
-	printf("\nTOTAL FALLBACK WEIGHT: %f",fallbackTotal);
+	//printf("\nFINAL DIST: %f",tourDist);
+	//printf("\nTOTAL FALLBACK WEIGHT: %f",fallbackTotal);
+	tour[tsp->numVerts] = tour[0];
+
+	localSearch->TwoOpt(tour);
+	int newDist = 0;
+
+	for(int i = 1; i < tsp->numVerts; i++)
+	{
+		newDist+= tsp->CalcEdgeDist(tour[i],tour[i-1]);
+	}
+
+	newDist+=tsp->CalcEdgeDist(tour[0],tour[tsp->numVerts-1]);
+	tourDist = newDist;
 }
 
 

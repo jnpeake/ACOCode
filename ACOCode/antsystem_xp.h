@@ -3,6 +3,7 @@
 #include "ant_xp.h"
 #include "timers.h"
 #include "tsp.h"
+#include "localsearch.h"
 #include "platform.h"
 
 class AntSystem
@@ -25,6 +26,7 @@ public:
 	float rho;
 	float mmasConst; // pherMin/pherMax for MMAS
 	Timers *timers;
+	LocalSearch *localSearch;
 
 	// iteration count at which stagnation occured
 	int iStagnation;
@@ -46,6 +48,7 @@ public:
 	float (**m_iDistSq);  // precalculated inverse square of edge distances
 	float (**m_fNN);		// nearest neighbour flags
 
+	RanluxGenerator rlgen;
 //public:
 	void Init( int nAnts, TSP *tsp, int seed );
 	void Clear( void );

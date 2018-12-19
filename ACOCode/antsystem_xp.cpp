@@ -21,6 +21,7 @@ void AntSystem::Init( int nAnts, TSP *tsp, int seed )
 {
 	m_nAnts = nAnts;
 	m_pTSP = tsp;
+
 	m_shortestDist = 1e20f;
 
 	timers = new Timers(5);
@@ -66,9 +67,9 @@ void AntSystem::Init( int nAnts, TSP *tsp, int seed )
 	m_pAnts = (Ant*)ALLOC( (m_nAnts * sizeof( Ant )) );
 	// create a ranlux generator to generate seeds for the
 	// ants (which use a numerical recipes quick and dirty generator).
-	RanluxGenerator rlgen;
+	
 	rlgen.init( seed );
-
+	localSearch = new LocalSearch(tsp, rlgen, 32);
 	//the ants are initialised in this loop
 	for ( i = 0; i < m_nAnts; i++ )
 	{
@@ -205,6 +206,8 @@ void AntSystem::Evaporate( void )
 void AntSystem::DoTours( void )
 {
 	int iNewShortest = -1;
+	float iterationShortest = 1e20f;
+	int iterationShortestAnt = m_nAnts;
 #ifdef USE_OMP // run an ant per thread in the tour construction phase
 #pragma omp parallel for 
 #endif
@@ -215,22 +218,50 @@ void AntSystem::DoTours( void )
 		m_pAnts[i].ConstructTour();
 		//printf("tour constructed");
 	}
-	
 
+	
+	
 	//checks the ants for the shortest tour distance
 	for ( int i = 0; i < m_nAnts; i++ )
 	{
+		if(m_pAnts[i].tourDist < iterationShortest)
+		{
+			iterationShortestAnt = i;
+		}
+
 		if ( m_pAnts[i].tourDist < m_shortestDist )
 		{
 			m_shortestDist = m_pAnts[i].tourDist;
 			iNewShortest = i;
 			// check the tour...
-		}
+		}		
 	}
+
+	m_pAnts[iterationShortestAnt].tour[m_pTSP->numVerts] = m_pAnts[iterationShortestAnt].tour[0];
+	localSearch->TwoOpt (m_pAnts[iterationShortestAnt].tour);
+
+	int newDist = 0;
+
+	for(int i = 1; i < m_pTSP->numVerts; i++)
+	{
+		newDist+= m_pTSP->CalcEdgeDist(m_pAnts[iterationShortestAnt].tour[i], m_pAnts[iterationShortestAnt].tour[i-1]);
+	}
+
+	newDist+=m_pTSP->CalcEdgeDist(m_pAnts[iterationShortestAnt].tour[0], m_pAnts[iterationShortestAnt].tour[m_pTSP->numVerts-1]);
+
+	if ( newDist < m_shortestDist )
+		{
+			m_shortestDist = newDist;
+			iNewShortest = iterationShortestAnt;
+		}	
+
+	
 
 	// copy new shortest tour, if any
 	if ( iNewShortest != -1 )
 	{
+		//m_pAnts[iNewShortest].tour[m_pTSP->numVerts] = m_pAnts[iNewShortest].tour[0];
+		//localSearch->TwoOpt (m_pAnts[iNewShortest].tour);
 //		printf("new shortest ant %d\n",iNewShortest);
 		memcpy( m_shortestTour, m_pAnts[iNewShortest].tour, m_pTSP->numVerts * sizeof(int) );
 	}
@@ -389,12 +420,12 @@ void AntSystem::Solve( int maxIterations, int maxStagnantIterations, bool contin
 	{
 		Iterate();
 		//std::cout << i << "\n";
-		if (i % 100 == 0)
+		if (i % 1 == 0)
 		{
 			printf("\nIteration: %d, Shortest Distance: %f, Timers: %f %f", i, m_shortestDist, timers->GetTimer(0), timers->GetTimer(1));fflush(stdout);
 		}
 		
-
+	
 		if ( m_shortestDist < shortestSoFar )
 		{
 			shortestSoFar = m_shortestDist;
@@ -418,6 +449,20 @@ void AntSystem::Solve( int maxIterations, int maxStagnantIterations, bool contin
 #endif
 //	CalcStagnationMetrics();
 }
+/*
+bool compareFunc( TourSort &t1, TourSort &t2 )
+{
+	return t1.length < t2.length;
+}
+struct TourSort
+{
+	int index;
+	float length;
+};
+*/
+//std::vector<TourSort> stuff;
+//std::sort( stuff.begin(), stuff.end(), compareFunc );
+
 
 float AntSystem::GetPheromoneValue(int pointA, int pointB)
 {

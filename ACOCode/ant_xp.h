@@ -8,6 +8,7 @@
 #include "localsearch.h"
 #include "tsp.h"
 #include "list"
+#include "timers.h"
 
 
 class Vector; // forward declaration
@@ -23,6 +24,7 @@ public:
 	int *tour;
 	int *remaining;
 	int nTour;
+	Timers *timers;
 	AntSystem *m_as;
 	LocalSearch *localSearch;
 

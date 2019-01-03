@@ -33,7 +33,8 @@ void LocalSearch::TwoOpt( int *tour )
 		pos[tour[i]] = i;
 		dlb[i] = false;
     }
-
+	
+	//printf("\n2opt started");
     improvement_flag = true;
     generate_random_permutation( random_vector );
 
@@ -41,6 +42,7 @@ void LocalSearch::TwoOpt( int *tour )
 	{
 
 		improvement_flag = false;
+		//printf("\nexchanges: %d",n_exchanges);
 
 		for (l = 0; l < n; l++)
 		{

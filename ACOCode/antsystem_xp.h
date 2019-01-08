@@ -5,11 +5,14 @@
 #include "tsp.h"
 #include "localsearch.h"
 #include "platform.h"
+#include <map>
 
 class AntSystem
 {
 	friend class Ant;
 public:	
+	std::map<unsigned int,float> weightMap;
+
 	Ant *m_pAnts;
 	int m_nAnts;
 
@@ -28,12 +31,14 @@ public:
 	Timers *timers;
 	LocalSearch *localSearch;
 
+
 	// iteration count at which stagnation occured
 	int iStagnation;
 	// stagnation metrics at point of stagnation
 	float stagnationEntropy;
 	float stagnationLambda;
 	float stagnationTourLength;
+	float pher0;
 	void DoTours( void );
 	void DepositFromTour( int *tour, float tourLength );
 	void Deposit( void );
@@ -47,6 +52,7 @@ public:
 	float (**m_weights);  // edge weights
 	float (**m_iDistSq);  // precalculated inverse square of edge distances
 	float (**m_fNN);		// nearest neighbour flags
+	 //pheromone map for non-NN values
 
 	RanluxGenerator rlgen;
 //public:

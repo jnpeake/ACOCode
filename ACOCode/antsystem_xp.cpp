@@ -21,7 +21,7 @@ void AntSystem::Init( int nAnts, TSP *tsp, int seed )
 {
 	m_nAnts = nAnts;
 	m_pTSP = tsp;
-
+	weightMap.clear();
 	m_shortestDist = 1e20f;
 
 	timers = new Timers(5);
@@ -138,6 +138,7 @@ void AntSystem::Clear( void )
 */
 	
 	val = 1.0f/(m_pTSP->nnDist*rho);
+	pher0 = val;
 	
 	printf("\nnnTour: %f Initial pheromone: %f\n",m_pTSP->nnDist,val);fflush(stdout);
 
@@ -420,7 +421,7 @@ void AntSystem::Solve( int maxIterations, int maxStagnantIterations, bool contin
 	{
 		Iterate();
 		//std::cout << i << "\n";
-		if (i % 1 == 0)
+		if (i % 100 == 0)
 		{
 			printf("\nIteration: %d, Shortest Distance: %f, Timers: %f %f", i, m_shortestDist, timers->GetTimer(0), timers->GetTimer(1));fflush(stdout);
 		}
@@ -466,17 +467,45 @@ struct TourSort
 
 float AntSystem::GetPheromoneValue(int pointA, int pointB)
 {
-	return m_pher[pointA][pointB];
+	/*bool nearestNeighbour = false;
+	for(int i = 0; i < m_pTSP->numNN; i++)
+	{
+		if(m_pTSP->nnList[pointA][i] = pointB)
+		{
+			nearestNeighbour = true;
+		}
+	}
+	if(nearestNeighbour == true)
+	{*/
+		return m_pher[pointA][pointB];
+	/*}
+	else
+	{
+		unsigned int hash = 0.5f*(pointA+pointB)*(pointA+pointB+1) + pointB;
+		
+		if(weightMap.find(hash) != weightMap.end())
+		{
+			return weightMap[hash];
+		}
+
+		else
+		{
+			return pher0;
+		}
+	}
+	*/
 }
 
 void AntSystem::SetPheromoneValue(int pointA, int pointB, float deltaPher, bool afterTour)
 {
 	bool aFound = false;
 	bool bFound = false;
+	bool nearestNeighbour;
 	int aPosition;
 	int bPosition;
 	int** nnList = m_pTSP->nnList;
 	int _numNN = m_pTSP->numNN;
+	
 
 	if(afterTour == true)
 	{
@@ -498,6 +527,7 @@ void AntSystem::SetPheromoneValue(int pointA, int pointB, float deltaPher, bool 
 			{
 				break;
 			}
+
 		}
 
 		if(bFound)
@@ -509,6 +539,23 @@ void AntSystem::SetPheromoneValue(int pointA, int pointB, float deltaPher, bool 
 		{
 			m_pher[pointB][aPosition] += deltaPher;
 		}
+
+		if(!aFound && !bFound)
+			{
+				unsigned int hash = 0.5f*(pointA+pointB)*(pointA+pointB+1) + pointB;
+				printf("a %d b %d hash %d size %d\n",pointA,pointB,hash,weightMap.size());
+				if(weightMap.find(hash) != weightMap.end())
+				{
+					printf("a\n");
+					weightMap[hash] += deltaPher;
+				}
+
+				else
+				{
+					printf("b\n");
+					weightMap[hash] = 0.0f;//pher0 + deltaPher;
+				}
+			}
 	}
 
 	else

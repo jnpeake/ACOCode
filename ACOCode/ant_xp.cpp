@@ -133,13 +133,12 @@ int Ant::fallback( float *weights, int *tabu, int currentIndex, TSP *tsp)
 int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnList, int numNN)
 {
 
+	ALIGN(float indexSeed[_VECSIZE]) = { 0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f};
+	ALIGN(float indexStep[_VECSIZE]) = { 8.0f, 8.0f, 8.0f, 8.0f, 8.0f, 8.0f, 8.0f, 8.0f};
 
-	ALIGN(float indexSeed[_VECSIZE]) = { 0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 10.0f, 11.0f, 12.0f, 13.0f, 14.0f, 15.0f};
-	ALIGN(float indexStep[_VECSIZE]) = { 16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f,16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f};
-
-	ALIGN(float minusOnes[_VECSIZE]) = { -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f };
+	ALIGN(float minusOnes[_VECSIZE]) = { -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f};
 	
-	ALIGN(float nextIndicesArray[_VECSIZE]) = {0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f};
+	ALIGN(float nextIndicesArray[_VECSIZE]) = {0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f};
 	Vector minusOne;
 	minusOne.load(minusOnes);
 	Vector runningIndex;
@@ -202,7 +201,6 @@ void Ant::ConstructTour( void )
 		printf("\n%d, %d:%f",m_as->m_weights[i][j]);
 		}
 	}*/
-	timers = new Timers(2);
 	int fallbackTotal = 0;
 	int i, j;
 	tourDist = 0.0f;
@@ -233,7 +231,7 @@ void Ant::ConstructTour( void )
 	}
 	int fallbackCount = 0;
 	//std::cout << "new tour \n";
-	timers->StartTimer(0);
+	//timers->StartTimer(0);
 	for ( i = 1; i < tsp->numVerts; i++ )
 	{
 #pragma noinline
@@ -254,7 +252,6 @@ void Ant::ConstructTour( void )
 		else
 		{
 			tourDist += tsp->edgeDist[tour[i-1]][tour[i]];
-			int origTour = tour[i];
 			tour[i] = tsp->nnList[tour[i - 1]][tour[i]];
 			//printf("\n%d: %d | DISTANCE: %f| DIFFERENCE: %f",i,tour[i],tourDist,tsp->edgeDist[tour[i-1]][origTour]);
 			
@@ -271,8 +268,8 @@ void Ant::ConstructTour( void )
 		
 	}
 	tourDist += tsp->CalcEdgeDist(tour[0],tour[tsp->numVerts-1]);
-	timers->StopTimer(0);
-	timers->StartTimer(1);
+	//timers->StopTimer(0);
+	//timers->StartTimer(1);
 	//printf("\nFINAL DIST: %f",tourDist);
 	//printf("\nTOTAL FALLBACK WEIGHT: %f",fallbackTotal);
 	tour[tsp->numVerts] = tour[0];
@@ -286,9 +283,11 @@ void Ant::ConstructTour( void )
 
 	newDist+=tsp->CalcEdgeDist(tour[0],tour[tsp->numVerts-1]);
 	tourDist = newDist;
-	timers->StopTimer(1);
-	printf("\nTour Time:%f | LS Time:%f",timers->GetTimer(0), timers->GetTimer(1));
+	//timers->StopTimer(1);
+	//printf("\nTour Time:%f | LS Time:%f",timers->GetTimer(0), timers->GetTimer(1));
 
 }
+
+
 
 

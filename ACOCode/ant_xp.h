@@ -53,6 +53,8 @@ public:
 	void ConstructTour( void ); 
 
 	void Init( AntSystem *as, int * seeds );
+
+
 };
 
 #endif

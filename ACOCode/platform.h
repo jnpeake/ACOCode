@@ -1,6 +1,8 @@
 #ifndef _PLATFORM_INC_
 #define _PLATFORM_INC_
-#define __AVX512F__
+//#define __AVX512F__
+#define __AVX2__
+
 //#define EMULATE
 //#define USE_VROULETTE
 #ifdef __AVX2__
@@ -17,7 +19,7 @@
 #define _VECSIZE 8
 #endif
 #ifndef EMULATE
-#define ALLOC( _x ) _mm_malloc( (_x), 64 )
+#define ALLOC( _x ) _mm_malloc( (_x), BITS )
 #define FREE( _x ) _mm_free( _x )
 #define USE_OMP
 #else
@@ -26,7 +28,7 @@
 #endif
 
 #ifdef __GNUC__
-#define ALIGN(a) a __attribute__ ((aligned (BITS)))
+#define ALIGN(a) a __attribute__ ((aligned (64)))
 #else
 #define ALIGN(a) __declspec(align(BITS)) a
 #endif

@@ -125,6 +125,7 @@ public:
 					}	
 				}*/
 			}
+			free(tour);
 			//printf("X: %f, Y: %f\n", newVertX[10],newVertY[10]);
 			//printf("X: %f, Y: %f\n", origVertX[10],origVertY[10]);
 			//origVertX = newVertX;
@@ -171,8 +172,10 @@ public:
 				//fills edgedistance - adds every value contained in a vectorIndex, not just nearest neighbours
 				for(int j = _nn.vectIndex* _VECSIZE; j < (_nn.vectIndex * _VECSIZE) + _VECSIZE; j++ )
 					{
+					
 						edgeDist[iList][(count3*_VECSIZE)+edgeDistCount] = CalcEdgeDist(iList,j);
 						nnList[iList][(count3*_VECSIZE)+edgeDistCount] = j;
+
 						//printf("%f \n", CalcEdgeDist(iList,j));
 						//printf("%d, %d: %f \n",iList,(count3*_VECSIZE)+edgeDistCount),edgeDist[iList][(count3*_VECSIZE)+edgeDistCount];
 						edgeDistCount++;
@@ -365,6 +368,8 @@ public:
 					stillHeader = 0; // unsupported edge type, quit reading
 			}
 		}
+
+		free(line);
 
 		//end of while loop - header has ended
 

@@ -62,7 +62,7 @@ public:
 	TSP *GetTSP( void ) { return m_pTSP; }
 	int fallbackCount;
 	int usingNNCount;
-	float GetPheromoneValue(int pointA, int pointB);
+	float GetPheromoneValue(int pointA, int pointB, bool afterTour);
 	void SetPheromoneValue(int pointA, int pointB, float deltaPher, bool afterTour);
 
 	// return results

@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "/home/staff/joshuap/Code/ACOCode/ACOCode/antmain",
-            "args": ["lin318.tsp","1024","32","100","99999"],
+            "args": ["a280.tsp","1024","32","100","99999"],
             "stopAtEntry": false,
             "cwd": "/home/staff/joshuap/Code/ACOCode/ACOCode",
             "environment": [],

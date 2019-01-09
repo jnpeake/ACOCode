@@ -161,9 +161,9 @@ void AntSystem::Clear( void )
 			//inverse square of edge distances
 			m_iDistSq[i][j] = 1.0f/(m_pTSP->edgeDist[i][j]*m_pTSP->edgeDist[i][j]);
 			//pheromone / edgeDist^2
-			m_weights[i][j] = (GetPheromoneValue(i,j)/(m_pTSP->edgeDist[i][j]*m_pTSP->edgeDist[i][j]))*1000;
+			m_weights[i][j] = (GetPheromoneValue(i,j, false)/(m_pTSP->edgeDist[i][j]*m_pTSP->edgeDist[i][j]));
 			
-			//printf("%d, %d: %f \n",i,j,m_weights[i][j]);
+			//printf("%d, %d: %f | %f | %f \n",i,j,m_weights[i][j], GetPheromoneValue(i,j, false), m_pTSP->edgeDist[i][j]);
 			}
 
 			//else
@@ -199,7 +199,7 @@ void AntSystem::Evaporate( void )
 	{
 	  for ( int j = 0; j < m_pTSP -> matrixSize; j++ )
 	    {
-			SetPheromoneValue(i,j,GetPheromoneValue(i,j) * (1.0f - rho), false);
+			SetPheromoneValue(i,j,GetPheromoneValue(i,j, false) * (1.0f - rho), false);
 	    }
 	}
 }
@@ -465,17 +465,10 @@ struct TourSort
 //std::sort( stuff.begin(), stuff.end(), compareFunc );
 
 
-float AntSystem::GetPheromoneValue(int pointA, int pointB)
+float AntSystem::GetPheromoneValue(int pointA, int pointB, bool afterTour)
 {
-	/*bool nearestNeighbour = false;
-	for(int i = 0; i < m_pTSP->numNN; i++)
-	{
-		if(m_pTSP->nnList[pointA][i] = pointB)
-		{
-			nearestNeighbour = true;
-		}
-	}
-	if(nearestNeighbour == true)
+
+	/*if(afterTour == false)
 	{*/
 		return m_pher[pointA][pointB];
 	/*}
@@ -492,8 +485,8 @@ float AntSystem::GetPheromoneValue(int pointA, int pointB)
 		{
 			return pher0;
 		}
-	}
-	*/
+	}*/
+	
 }
 
 void AntSystem::SetPheromoneValue(int pointA, int pointB, float deltaPher, bool afterTour)
@@ -540,28 +533,29 @@ void AntSystem::SetPheromoneValue(int pointA, int pointB, float deltaPher, bool 
 			m_pher[pointB][aPosition] += deltaPher;
 		}
 
-		if(!aFound && !bFound)
+		/*if(!aFound && !bFound)
 			{
-				unsigned int hash = 0.5f*(pointA+pointB)*(pointA+pointB+1) + pointB;
-				printf("a %d b %d hash %d size %d\n",pointA,pointB,hash,weightMap.size());
+				if(pointB > pointA)
+				{
+					pointA = pointB;
+				}
+
+				unsigned int hash = pointA*m_pTSP->numVerts + pointB; 
+
 				if(weightMap.find(hash) != weightMap.end())
 				{
-					printf("a\n");
 					weightMap[hash] += deltaPher;
 				}
 
 				else
 				{
-					printf("b\n");
-					weightMap[hash] = 0.0f;//pher0 + deltaPher;
+					weightMap[hash] = pher0 + deltaPher;
 				}
-			}
+			} */
 	}
 
 	else
 	{
 		m_pher[pointA][pointB] += deltaPher;
-		m_pher[pointB][pointA] += deltaPher;
-		
 	}
 }

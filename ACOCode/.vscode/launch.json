@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "/home/staff/joshuap/Code/ACOCode/ACOCode/antmain",
-            "args": ["a280.tsp","1024","32","100","99999"],
+            "args": ["mona-lisa100k.tsp","10000","32","120","99999"],
             "stopAtEntry": false,
             "cwd": "/home/staff/joshuap/Code/ACOCode/ACOCode",
             "environment": [],

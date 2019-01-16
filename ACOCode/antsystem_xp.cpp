@@ -21,7 +21,9 @@ void AntSystem::Init( int nAnts, TSP *tsp, int seed )
 {
 	m_nAnts = nAnts;
 	m_pTSP = tsp;
+	#ifdef mapFB
 	weightMap.clear();
+	#endif
 	m_shortestDist = 1e20f;
 
 	timers = new Timers(5);
@@ -421,7 +423,7 @@ void AntSystem::Solve( int maxIterations, int maxStagnantIterations, bool contin
 	{
 		Iterate();
 		//std::cout << i << "\n";
-		if (i % 100 == 0)
+		if (i % 1 == 0)
 		{
 			printf("\nIteration: %d, Shortest Distance: %f, Timers: %f %f", i, m_shortestDist, timers->GetTimer(0), timers->GetTimer(1));fflush(stdout);
 		}
@@ -468,13 +470,22 @@ struct TourSort
 float AntSystem::GetPheromoneValue(int pointA, int pointB, bool afterTour)
 {
 
-	/*if(afterTour == false)
-	{*/
+	if(afterTour == false)
+	{
 		return m_pher[pointA][pointB];
-	/*}
+	}
+	#ifdef mapFB
+
 	else
 	{
-		unsigned int hash = 0.5f*(pointA+pointB)*(pointA+pointB+1) + pointB;
+		if(pointB > pointA)
+		{
+			int tempA = pointA;
+			pointA = pointB;
+			pointB = tempA;
+		}
+
+		unsigned int hash = pointA*m_pTSP->numVerts + pointB; 
 		
 		if(weightMap.find(hash) != weightMap.end())
 		{
@@ -485,7 +496,9 @@ float AntSystem::GetPheromoneValue(int pointA, int pointB, bool afterTour)
 		{
 			return pher0;
 		}
-	}*/
+	}
+
+	#endif
 	
 }
 
@@ -533,11 +546,14 @@ void AntSystem::SetPheromoneValue(int pointA, int pointB, float deltaPher, bool 
 			m_pher[pointB][aPosition] += deltaPher;
 		}
 
-		/*if(!aFound && !bFound)
+		#ifdef mapFB
+		if(!aFound && !bFound)
 			{
 				if(pointB > pointA)
 				{
+					int tempA = pointA;
 					pointA = pointB;
+					pointB = tempA;
 				}
 
 				unsigned int hash = pointA*m_pTSP->numVerts + pointB; 
@@ -551,7 +567,8 @@ void AntSystem::SetPheromoneValue(int pointA, int pointB, float deltaPher, bool 
 				{
 					weightMap[hash] = pher0 + deltaPher;
 				}
-			} */
+			}
+		#endif 
 	}
 
 	else

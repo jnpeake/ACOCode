@@ -45,5 +45,5 @@ int main( int argc, char *argv[] )
 
   as->Solve( nIter, nIter );
   timers->StopTimer(0);
-  printf("shortest tour: %f time %lf\n",as->GetShortestTourLength(),timers->GetTimer(0) );
+  printf("\nshortest tour: %f time %lf\n",as->GetShortestTourLength(),timers->GetTimer(0) );
 }

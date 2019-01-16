@@ -105,6 +105,8 @@ int Ant::fallback( float *weights, int *tabu, int currentIndex, TSP *tsp)
 	
 }*/
 
+#ifdef defaultValFB
+
 int Ant::fallback( float *weights, int *tabu, int currentIndex, TSP *tsp)
 {
 	float* vertX = tsp->vertX;
@@ -130,15 +132,63 @@ int Ant::fallback( float *weights, int *tabu, int currentIndex, TSP *tsp)
 	return nextPoint;
 }
 
+
+#elif defined mapFB
+
+int Ant::fallback(float *weights, int *tabu, int currentIndex, TSP *tsp)
+{
+	int highestIndex;
+	float highestWeight = 0.0f;
+	int positionA;
+	int positionB;
+	for(int i = 0; i < tsp->numVerts; i++ )
+	{
+		if(!((tabu[i/_VECSIZE] >> i % _VECSIZE) & 1))
+		{
+			if(i > currentIndex)
+			{
+				int tempCurr = currentIndex;
+				positionA = i;
+				positionB = tempCurr;	
+			}
+
+			else
+			{
+				positionB = i;
+				positionA = currentIndex;
+			}
+
+			unsigned int hash = positionA*tsp->numVerts + positionB; 
+			float weight = (m_as->GetPheromoneValue(positionA,positionB, true)/(tsp->CalcEdgeDist(positionA,positionB)*tsp->CalcEdgeDist(positionA,positionB)));
+
+			if(weight > highestWeight)
+			{
+				highestWeight = weight;
+				highestIndex = i;
+			}
+		}
+	}
+
+	return highestIndex;
+
+}
+#endif
+
 int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnList, int numNN)
 {
 
+#ifdef AVX2
 	ALIGN(float indexSeed[_VECSIZE]) = { 0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f};
 	ALIGN(float indexStep[_VECSIZE]) = { 8.0f, 8.0f, 8.0f, 8.0f, 8.0f, 8.0f, 8.0f, 8.0f};
-
 	ALIGN(float minusOnes[_VECSIZE]) = { -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f};
-	
 	ALIGN(float nextIndicesArray[_VECSIZE]) = {0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f};
+
+#elif defined AVX512
+	ALIGN(float indexSeed[_VECSIZE]) = { 0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 10.0f, 11.0f, 12.0f, 13.0f, 14.0f, 15.0f};
+	ALIGN(float indexStep[_VECSIZE]) = { 16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f, 16.0f};
+	ALIGN(float minusOnes[_VECSIZE]) = { -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f ,-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f};
+	ALIGN(float nextIndicesArray[_VECSIZE]) = {0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f};
+#endif
 	Vector minusOne;
 	minusOne.load(minusOnes);
 	Vector runningIndex;
@@ -253,7 +303,7 @@ void Ant::ConstructTour( void )
 		{
 			tourDist += tsp->edgeDist[tour[i-1]][tour[i]];
 			tour[i] = tsp->nnList[tour[i - 1]][tour[i]];
-			//printf("\n%d: %d | DISTANCE: %f| DIFFERENCE: %f",i,tour[i],tourDist,tsp->edgeDist[tour[i-1]][origTour]);
+			//printf("\n%d: %d | DISTANCE: %f",i,tour[i],tourDist);
 			
 		}
 		

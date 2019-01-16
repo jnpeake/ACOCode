@@ -20,38 +20,38 @@ def get_stats( arr ):
     lq = sorted(arr)[num//4]
     median = sorted(arr)[num//2]
     uq = sorted(arr)[3*num//4]
-    perAnt = mean/10000
+    perAnt = mean/1024
     print (num, min,lq,median,uq,max,mean, perAnt)
     return (min, lq, median, uq, max, mean, perAnt )
 
 trials_per_seed = 1
-num_seeds = 5
-num_tsp = 1
+num_seeds = 10
+num_tsp = 4
 seeds = []
 #seeds = ['12345','54321','11111','22222','10101','99999','06994','98765','22222','33333']
 #tsp = ['lin318.tsp','pcb442.tsp','rat783.tsp','pr1002.tsp','fl1577.tsp','pr2392.tsp','fl3795.tsp','rl5934.tsp','pla7397.tsp','rl11849.tsp']
 #tsp = ['lin318.tsp','pcb442.tsp','rat783.tsp','pr1002.tsp','fl1577.tsp','pr2392.tsp']
-#tsp = ['fl3795.tsp','rl5934.tsp','pla7397.tsp','rl11849.tsp']
+tsp = ['fl3795.tsp','rl5934.tsp','pla7397.tsp','rl11849.tsp']
 #tsp = ['pla7397.tsp','rl11849.tsp']
 #tsp = ['rl11849.tsp']
 #tsp = ['rat783.tsp']
-tsp = ['mona-lisa100k.tsp']
+#tsp = ['mona-lisa100k.tsp']
 for i in range(num_seeds):
     seeds.append(str(random.randint(0,99999)))
     
-ant_commands = ['//home//staff//joshuap//Code//ACOCode//ACOCode//antmain', 'a280.tsp', '10000', '32', '120', '12345']
+ant_commands = ['//home//staff//joshuap//Code//ACOCode//ACOCode//antmain', 'a280.tsp', '1024', '32', '100', '12345']
 
-
+ant_commands_original = ['//home//staff//joshuap//Code//ACOCode//ACOCode//antmainmap', 'a280.tsp', '1024', '32', '100', '12345']
 
 totalTimeList = [];
 totalLengthList = [];
 
-with open('monalisastats.csv', 'w') as csvfile:
+with open('monalisacompare.csv', 'w') as csvfile:
     resultWriter = csv.writer(csvfile, delimiter=',',
                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
     resultWriter.writerow(['NNList', 'Seed'])
-    resultWriter.writerow(['New'])
-    print("NEW")
+    resultWriter.writerow(['Defaul Val'])
+    print("Default Val")
     for i in range(trials_per_seed):
         resultWriter.writerow([ant_commands[5]])
         for j in range (num_tsp):
@@ -86,9 +86,9 @@ with open('monalisastats.csv', 'w') as csvfile:
         print("Times:"+(str(get_stats(timeList))))
         print("Lengths:"+(str(get_stats(lengthList))))
         
-    ''' A comment
-    resultWriter.writerow(['Original'])
-    print("ORIGINAL")
+
+    resultWriter.writerow(['Map'])
+    print("Map")
     for i in range(trials_per_seed):
         resultWriter.writerow([ant_commands_original[5]])
         for j in range (num_tsp):
@@ -124,10 +124,8 @@ with open('monalisastats.csv', 'w') as csvfile:
         print("Seed:"+ant_commands_original[5])
         print("Times:"+(str(get_stats(timeList))))
         print("Lengths:"+(str(get_stats(lengthList))))
-'''
+
     
-
-
         
 
 

@@ -453,7 +453,6 @@ void LocalSearch::ThreeOpt( int *tour )
     int *dlb;               /* vector containing don't look bits */ 
     int *h_tour;            /* help vector for performing exchange move */ 
     int *hh_tour;           /* help vector for performing exchange move */ 
-    int *random_vector;
 
     pos = (int *)malloc(n * sizeof(int));
 	dlb = (int *)malloc(n * sizeof(int));

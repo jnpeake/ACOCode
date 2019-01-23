@@ -2,8 +2,8 @@
 #ifndef _PLATFORM_INC_
 #define _PLATFORM_INC_
 //#define __AVX512F__
-#define defaultValFB
-//#define mapFB
+//#define defaultValFB
+#define mapFB
 #define __AVX2__
 
 //#define EMULATE
@@ -22,7 +22,7 @@
 #define _VECSIZE 8
 #endif
 #ifndef EMULATE
-#define ALLOC( _x ) _mm_malloc( (_x), BITS )
+#define ALLOC( _x ) _mm_malloc( (_x), 64 )
 #define FREE( _x ) _mm_free( _x )
 #define USE_OMP
 #else
@@ -31,7 +31,7 @@
 #endif
 
 #ifdef __GNUC__
-#define ALIGN(a) a __attribute__ ((aligned (64)))
+#define ALIGN(a) a __attribute__ ((aligned (BITS)))
 #else
 #define ALIGN(a) __declspec(align(BITS)) a
 #endif

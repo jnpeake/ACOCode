@@ -19,6 +19,7 @@
 
 void AntSystem::Init( int nAnts, TSP *tsp, int seed )
 {
+	
 	m_nAnts = nAnts;
 	m_pTSP = tsp;
 	#ifdef mapFB
@@ -26,7 +27,8 @@ void AntSystem::Init( int nAnts, TSP *tsp, int seed )
 	#endif
 	m_shortestDist = 1e20f;
 
-	timers = new Timers(5);
+	timers = new Timers(3);
+
 	fallbackCount = 0;
 	usingNNCount = 0;
 
@@ -142,7 +144,7 @@ void AntSystem::Clear( void )
 	val = 1.0f/(m_pTSP->nnDist*rho);
 	pher0 = val;
 	
-	printf("\nnnTour: %f Initial pheromone: %f\n",m_pTSP->nnDist,val);fflush(stdout);
+	//printf("\nnnTour: %f Initial pheromone: %f\n",m_pTSP->nnDist,val);fflush(stdout);
 
 
 	//from 0 to numVerts
@@ -398,12 +400,16 @@ void AntSystem::CalcStagnationMetrics( void )
 
 void AntSystem::Iterate( void )
 {
-  	timers->StartTimer(0);
-  	DoTours(); 
-  	timers->StopTimer(0);
+	timers->StartTimer(0);
+
   	timers->StartTimer(1);
-  	Deposit();
+  	DoTours(); 
   	timers->StopTimer(1);
+  	timers->StartTimer(2);
+  	Deposit();
+  	timers->StopTimer(2);
+	timers->StopTimer(0);
+
 }
 
 void AntSystem::Solve( int maxIterations, int maxStagnantIterations, bool continueStagnant )
@@ -417,18 +423,21 @@ void AntSystem::Solve( int maxIterations, int maxStagnantIterations, bool contin
 	bool stagnated = false;
 	timers->Clear();
 	iStagnation = -1; // sentinel value indicates no stagnation
+	
+
 
 	//loop will continue until the max number of iterations are reached
 	for ( i = 0; i < maxIterations && !(stagnated && !continueStagnant); i++ )
 	{
+		
 		Iterate();
 		//std::cout << i << "\n";
 		if (i % 1 == 0)
 		{
-			printf("\nIteration: %d, Shortest Distance: %f, Timers: %f %f", i, m_shortestDist, timers->GetTimer(0), timers->GetTimer(1));fflush(stdout);
+			printf("\n%d %f %f %f %f %d", i, m_shortestDist, timers->GetTimer(1), timers->GetTimer(2), timers->GetTimer(0), weightMap.size());fflush(stdout);
 		}
 		
-	
+		
 		if ( m_shortestDist < shortestSoFar )
 		{
 			shortestSoFar = m_shortestDist;
@@ -445,6 +454,10 @@ void AntSystem::Solve( int maxIterations, int maxStagnantIterations, bool contin
 			stagnationTourLength = m_shortestDist;
 			stagnated = true;
 		}
+
+
+		
+			
 	}
 #ifdef EMULATE
 	printf("\nFINAL: Iteration: %d, Shortest Distance: %f, Shortest Tour: %d, ", i, m_shortestDist, m_shortestTour, timers->GetTimer(0), timers->GetTimer(1));
@@ -485,7 +498,7 @@ float AntSystem::GetPheromoneValue(int pointA, int pointB, bool afterTour)
 			pointB = tempA;
 		}
 
-		unsigned int hash = pointA*m_pTSP->numVerts + pointB; 
+		uint64_t hash = pointA*m_pTSP->numVerts + pointB; 
 		
 		if(weightMap.find(hash) != weightMap.end())
 		{
@@ -556,7 +569,7 @@ void AntSystem::SetPheromoneValue(int pointA, int pointB, float deltaPher, bool 
 					pointB = tempA;
 				}
 
-				unsigned int hash = pointA*m_pTSP->numVerts + pointB; 
+				uint64_t hash = pointA*m_pTSP->numVerts + pointB; 
 
 				if(weightMap.find(hash) != weightMap.end())
 				{

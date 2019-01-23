@@ -27,7 +27,7 @@ int main( int argc, char *argv[] )
 
   sscanf( argv[4],"%d", &nAnts );
 
-  Timers *timers = new Timers(10);
+  Timers *timers = new Timers(1);
 
   AntSystem *as = new AntSystem();
 

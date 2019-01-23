@@ -12,7 +12,7 @@ class AntSystem
 	friend class Ant;
 public:	
 	#ifdef mapFB
-	std::map<unsigned int,float> weightMap;
+	std::map<uint64_t,float> weightMap;
 	#endif
 	Ant *m_pAnts;
 	int m_nAnts;

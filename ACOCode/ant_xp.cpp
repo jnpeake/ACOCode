@@ -1,6 +1,7 @@
 #include "ant_xp.h"
 #include "antsystem_xp.h"
 #include "ranluxgen.h"
+#include "timers.h"
 
 #include "tsp.h"
 #include <cstdio> 
@@ -19,7 +20,7 @@ void Ant::Init( AntSystem *as, int *seeds )
 	rIndices = (int*)ALLOC( m_as->GetTSP()->numVerts * sizeof(int) );
 	rlgen.init(seeds[0] );
 	localSearch = new LocalSearch(tsp, rlgen, 32);
-
+	timers = new Timers(3);
 
 
 	// allocate the index and tabu arrays
@@ -41,69 +42,7 @@ void Ant::Init( AntSystem *as, int *seeds )
 	float f1 = 1.0f;
 	ones.set1(f1);
 }
-/*
-int Ant::fallback( float *weights, int *tabu, int currentIndex, TSP *tsp)
-{
-	int next;
-	int tryCount = 1;
-	bool validFound = false;
 
-	while(validFound == false)
-	{
-
-		int upIndex = (currentIndex+tryCount)%tsp->numVerts;
-		int downIndex = (currentIndex+tsp->numVerts-tryCount)%tsp->numVerts;
-		int upRemainder = upIndex % _VECSIZE;
-		int downRemainder = downIndex % _VECSIZE;
-		int upTabu = tabu[upIndex/_VECSIZE];
-		int downTabu = tabu[downIndex/_VECSIZE];
-		int upValid = ((upTabu >> upRemainder) & 1);
-		int downValid = ((downTabu >> downRemainder) & 1);
-
-		//if both indexes are valid
-		if(downValid == 0 && upValid ==0)
-		{
-			int weightUp = tsp->CalcEdgeDist(currentIndex, upIndex);
-			int weightDown = tsp->CalcEdgeDist(currentIndex, downIndex);
-			
-			
-			//if((tabuValue >> upRemainder) & 1)
-			//{
-			//	printf("\n%d",(tabuValue >> upRemainder) & 1);
-			//}
-			if(weightUp > weightDown)
-			{
-				next = upIndex;
-				validFound = true;
-			}
-
-			else
-			{
-					
-				next = downIndex;
-				validFound = true;
-			}
-		}
-
-		else if(downValid == 0)
-		{
-			next = downIndex;
-			validFound = true;
-		}
-
-		else if (upValid ==0)
-		{
-			next = upIndex;
-			validFound = true;
-		}
-		tryCount++;
-	}
-
-	
-	return next;
-	
-	
-}*/
 
 #ifdef defaultValFB
 
@@ -158,7 +97,6 @@ int Ant::fallback(float *weights, int *tabu, int currentIndex, TSP *tsp)
 				positionA = currentIndex;
 			}
 
-			unsigned int hash = positionA*tsp->numVerts + positionB; 
 			float weight = (m_as->GetPheromoneValue(positionA,positionB, true)/(tsp->CalcEdgeDist(positionA,positionB)*tsp->CalcEdgeDist(positionA,positionB)));
 
 			if(weight > highestWeight)
@@ -251,6 +189,8 @@ void Ant::ConstructTour( void )
 		printf("\n%d, %d:%f",m_as->m_weights[i][j]);
 		}
 	}*/
+	timers->Clear();
+	timers->StartTimer(0);
 	int fallbackTotal = 0;
 	int i, j;
 	tourDist = 0.0f;
@@ -292,9 +232,11 @@ void Ant::ConstructTour( void )
 		//std::cout << tour[i] << "\n";
 		if (tour[i] == -1)
 		{
+			timers->StartTimer(2);
 			tour[i] = fallback(m_as->m_weights[tour[i - 1]], tabu, tour[i-1], tsp);
 			tourDist += tsp->CalcEdgeDist(tour[i],tour[i-1]);
 			fallbackTotal += tsp->CalcEdgeDist(tour[i],tour[i-1]);
+			timers->StopTimer(2);
 			
 			//printf("\n%d: %d | DISTANCE: %f | DIFFERENCE: %f | FALLBACK %d",i,tour[i],tourDist,tsp->CalcEdgeDist(tour[i],tour[i-1]),++fallbackCount);
 		}
@@ -323,7 +265,10 @@ void Ant::ConstructTour( void )
 	//printf("\nFINAL DIST: %f",tourDist);
 	//printf("\nTOTAL FALLBACK WEIGHT: %f",fallbackTotal);
 	tour[tsp->numVerts] = tour[0];
-	localSearch->TwoOpt(tour);
+	
+	timers->StartTimer(1);
+	localSearch->ThreeOpt(tour);
+	timers->StopTimer(1);
 	int newDist = 0;
 
 	for(int i = 1; i < tsp->numVerts; i++)
@@ -333,6 +278,8 @@ void Ant::ConstructTour( void )
 
 	newDist+=tsp->CalcEdgeDist(tour[0],tour[tsp->numVerts-1]);
 	tourDist = newDist;
+	timers->StopTimer(0);
+	printf("\n THREAD TIMES | OVERALL %f | FALLBACK %f | LOCAL SEARCH %f", timers->GetTimer(0),timers->GetTimer(2),timers->GetTimer(1));
 	//timers->StopTimer(1);
 	//printf("\nTour Time:%f | LS Time:%f",timers->GetTimer(0), timers->GetTimer(1));
 

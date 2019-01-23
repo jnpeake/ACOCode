@@ -51,6 +51,7 @@ public:
 	void StartTimer( int timer )
 	{
 		timers[timer] -= microsecs();
+		
 	}
 	void StopTimer( int timer )
 	{

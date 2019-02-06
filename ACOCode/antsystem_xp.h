@@ -31,6 +31,7 @@ public:
 	float mmasConst; // pherMin/pherMax for MMAS
 	Timers *timers;
 	LocalSearch *localSearch;
+	bool antPrint;
 
 
 	// iteration count at which stagnation occured
@@ -65,6 +66,7 @@ public:
 	int usingNNCount;
 	float GetPheromoneValue(int pointA, int pointB, bool afterTour);
 	void SetPheromoneValue(int pointA, int pointB, float deltaPher, bool afterTour);
+	void MapEvap(float evapFac, float pherMax, float pherMin);
 
 	// return results
 	float GetShortestTourLength() { return m_shortestDist; }

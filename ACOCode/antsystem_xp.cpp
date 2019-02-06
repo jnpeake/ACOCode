@@ -73,7 +73,7 @@ void AntSystem::Init( int nAnts, TSP *tsp, int seed )
 	// ants (which use a numerical recipes quick and dirty generator).
 	
 	rlgen.init( seed );
-	localSearch = new LocalSearch(tsp, rlgen, 32);
+	localSearch = new LocalSearch(tsp, rlgen, tsp->numNN);
 	//the ants are initialised in this loop
 	for ( i = 0; i < m_nAnts; i++ )
 	{
@@ -166,6 +166,7 @@ void AntSystem::Clear( void )
 			m_iDistSq[i][j] = 1.0f/(m_pTSP->edgeDist[i][j]*m_pTSP->edgeDist[i][j]);
 			//pheromone / edgeDist^2
 			m_weights[i][j] = (GetPheromoneValue(i,j, false)/(m_pTSP->edgeDist[i][j]*m_pTSP->edgeDist[i][j]));
+			//printf("\n%f",m_weights[i][j]);
 			
 			//printf("%d, %d: %f | %f | %f \n",i,j,m_weights[i][j], GetPheromoneValue(i,j, false), m_pTSP->edgeDist[i][j]);
 			}
@@ -243,7 +244,7 @@ void AntSystem::DoTours( void )
 	}
 
 	m_pAnts[iterationShortestAnt].tour[m_pTSP->numVerts] = m_pAnts[iterationShortestAnt].tour[0];
-	localSearch->TwoOpt (m_pAnts[iterationShortestAnt].tour);
+	//localSearch->ThreeOpt (m_pAnts[iterationShortestAnt].tour);
 
 	int newDist = 0;
 
@@ -316,7 +317,9 @@ void AntSystem::Deposit( void )
 	vEvap.set1(evapFac);
 	Vector vOnes;
 	vOnes.set1(one);
-
+	#ifdef mapFB
+	MapEvap(evapFac, pherMax, pherMin);
+	#endif
 
 
 	// precompute the probability into, and enforce min and max pheromone levels for MMAS
@@ -432,9 +435,14 @@ void AntSystem::Solve( int maxIterations, int maxStagnantIterations, bool contin
 		
 		Iterate();
 		//std::cout << i << "\n";
-		if (i % 1 == 0)
+		if (i % 10 == 0)
 		{
+			#ifdef mapFB
 			printf("\n%d %f %f %f %f %d", i, m_shortestDist, timers->GetTimer(1), timers->GetTimer(2), timers->GetTimer(0), weightMap.size());fflush(stdout);
+			#else
+			printf("\n%d %f %f %f %f %d", i, m_shortestDist, timers->GetTimer(1), timers->GetTimer(2), timers->GetTimer(0));fflush(stdout);
+			#endif
+
 		}
 		
 		
@@ -589,3 +597,25 @@ void AntSystem::SetPheromoneValue(int pointA, int pointB, float deltaPher, bool 
 		m_pher[pointA][pointB] += deltaPher;
 	}
 }
+
+#ifdef mapFB
+void AntSystem::MapEvap(float evapFac, float pherMax, float pherMin){
+	
+	std::map<uint64_t, float>::iterator it;
+	for ( it = weightMap.begin(); it != weightMap.end(); it++ )
+	{
+		it->second = it->second * evapFac;
+		if(it->second > pherMax)
+		{
+			it->second = pherMax;
+		}
+
+		else if (it->second < pherMin)
+		{
+			it->second = pherMin;
+		}
+	}
+
+}
+#endif
+

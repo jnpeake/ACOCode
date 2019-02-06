@@ -220,6 +220,8 @@ public:
 		return (int)(d+0.5f);
 	}
 
+	
+
 	static int CeilDistance(float x0, float y0, float x1, float y1)
 	{
 		float d = (x0 - x1)*(x0 - x1) + (y0 - y1)*(y0 - y1);

@@ -207,6 +207,24 @@ Vector vecRandom(Vector& rC0, Vector& rC1, Vector& factor, Vector& rSeed) // SIG
 
 }
 
+Vector EucDistanceVec(Vector x0, Vector y0, Vector x1, Vector y1)
+	{
+		float zeroPointFive = 0.5f;
+		Vector zeroPointFiveVec;
+		zeroPointFiveVec.AVXVec = _mm256_set1_ps(zeroPointFive);
+		Vector xMinus = x0 - y0;
+		Vector yMinus = y0 - y1;
+		Vector xMinusSq = xMinus * xMinus;
+		Vector yMinusSq = yMinus * yMinus;
+
+		Vector d = xMinusSq + yMinusSq;
+		d.AVXVec = _mm256_sqrt_ps(d.AVXVec);
+		d = d + zeroPointFiveVec;
+		Vector convertedVec;
+		convertedVec.AVXIntVec = _mm256_cvtps_epi32(d.AVXVec);
+		return convertedVec;
+	}
+
 
 
 void maxLocStep(Vector &oldWeights, Vector &oldIndices, Vector &newWeights, Vector &newIndices) // SIGNIFICANTLY DIFFERENT TO AVX512 --------------------------

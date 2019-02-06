@@ -2,8 +2,8 @@
 #ifndef _PLATFORM_INC_
 #define _PLATFORM_INC_
 //#define __AVX512F__
-//#define defaultValFB
-#define mapFB
+#define defaultValFB
+//#define mapFB
 #define __AVX2__
 
 //#define EMULATE

@@ -19,8 +19,8 @@ void Ant::Init( AntSystem *as, int *seeds )
 
 	rIndices = (int*)ALLOC( m_as->GetTSP()->numVerts * sizeof(int) );
 	rlgen.init(seeds[0] );
-	localSearch = new LocalSearch(tsp, rlgen, 32);
-	timers = new Timers(3);
+	localSearch = new LocalSearch(tsp, rlgen, m_as->GetTSP()->numNN);
+	timers = new Timers(4);
 
 
 	// allocate the index and tabu arrays
@@ -96,8 +96,9 @@ int Ant::fallback(float *weights, int *tabu, int currentIndex, TSP *tsp)
 				positionB = i;
 				positionA = currentIndex;
 			}
-
+			timers->StartTimer(3);
 			float weight = (m_as->GetPheromoneValue(positionA,positionB, true)/(tsp->CalcEdgeDist(positionA,positionB)*tsp->CalcEdgeDist(positionA,positionB)));
+			timers->StopTimer(3);
 
 			if(weight > highestWeight)
 			{
@@ -237,6 +238,7 @@ void Ant::ConstructTour( void )
 			tourDist += tsp->CalcEdgeDist(tour[i],tour[i-1]);
 			fallbackTotal += tsp->CalcEdgeDist(tour[i],tour[i-1]);
 			timers->StopTimer(2);
+			fallbackCount++;
 			
 			//printf("\n%d: %d | DISTANCE: %f | DIFFERENCE: %f | FALLBACK %d",i,tour[i],tourDist,tsp->CalcEdgeDist(tour[i],tour[i-1]),++fallbackCount);
 		}
@@ -263,7 +265,7 @@ void Ant::ConstructTour( void )
 	//timers->StopTimer(0);
 	//timers->StartTimer(1);
 	//printf("\nFINAL DIST: %f",tourDist);
-	//printf("\nTOTAL FALLBACK WEIGHT: %f",fallbackTotal);
+	//printf("\nTOTAL FALLBACK WEIGHT: %d",fallbackTotal);
 	tour[tsp->numVerts] = tour[0];
 	
 	timers->StartTimer(1);
@@ -279,7 +281,10 @@ void Ant::ConstructTour( void )
 	newDist+=tsp->CalcEdgeDist(tour[0],tour[tsp->numVerts-1]);
 	tourDist = newDist;
 	timers->StopTimer(0);
-	printf("\n THREAD TIMES | OVERALL %f | FALLBACK %f | LOCAL SEARCH %f", timers->GetTimer(0),timers->GetTimer(2),timers->GetTimer(1));
+	float fallbackPercentage = ((float)fallbackCount/(float)tsp->numVerts)*100;
+
+
+	//printf("\n Thread Times | Overall %f | Fallback %f | Local Search %f | Weight Calculation %f | Fallback Percentage %f%% | Total Fallback Weight %d", timers->GetTimer(0),timers->GetTimer(2),timers->GetTimer(1),timers->GetTimer(3),fallbackPercentage,fallbackTotal);
 	//timers->StopTimer(1);
 	//printf("\nTour Time:%f | LS Time:%f",timers->GetTimer(0), timers->GetTimer(1));
 

@@ -1435,6 +1435,8 @@ void LocalSearch::ThreeOpt( int *tour )
 	    }
 	}
 	}
+	free(pos);
+	free(dlb);
     free( h_tour );
     free( hh_tour );
 }

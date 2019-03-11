@@ -398,6 +398,7 @@ public:
 
 		// read in the vertices
 		//allocates memory for the vertices - the space allocated is a matrix (number of vertices * sizeof(float), which is 4.
+
 		vertX = (float*)malloc( numVerts * sizeof(float) );
 		vertY = (float*)malloc( numVerts * sizeof(float) );
 		int iVert = 0;

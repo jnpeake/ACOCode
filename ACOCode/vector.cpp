@@ -218,7 +218,7 @@ Vector EucDistanceVec(Vector x0, Vector y0, Vector x1, Vector y1)
 		Vector yMinusSq = yMinus * yMinus;
 
 		Vector d = xMinusSq + yMinusSq;
-		d.AVXVec = _mm256_sqrt_ps(d.AVXVec);
+		//d.AVXVec = _mm256_sqrt_ps(d.AVXVec);
 		d = d + zeroPointFiveVec;
 		Vector convertedVec;
 		convertedVec.AVXIntVec = _mm256_cvtps_epi32(d.AVXVec);

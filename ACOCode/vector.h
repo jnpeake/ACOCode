@@ -192,9 +192,8 @@ public:
 		}
 #elif defined AVX512
 		this->AVXIntVec = _mm512_load_epi32(source);
-#elif defined AVX
+#elif (defined AVX || defined AVX2)
 		this->AVXIntVec = _mm256_load_si256(((const __m256i *)source));
-#elif defined AVX2
 #endif
 	}
 

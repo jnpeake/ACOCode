@@ -1,7 +1,8 @@
 #include "tsp.h"
-#include "antsystem_xp.h"
+#include "antsystem.h"
 #include "timers.h"
 #include <stdio.h>
+#include <string>
 
 int main( int argc, char *argv[] )
 {
@@ -18,7 +19,11 @@ int main( int argc, char *argv[] )
 
 
   //creates edge matrix and NN list
-  tsp->Init( argv[1], nNeighbours );
+  std::string path ("tsps//");
+  std::string filename(argv[1]);
+  std::string fullPath(path + filename);
+
+  tsp->Init(fullPath.c_str(), nNeighbours );
   
   int nIter;
   int nAnts;

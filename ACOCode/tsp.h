@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <vector>
 #include <omp.h>
+#include <string>
 #include "platform.h"
 
 typedef struct

@@ -46,7 +46,7 @@ void Ant::Init( AntSystem *as, int *seeds )
 
 #ifdef defaultValFB
 
-/*int Ant::fallback( float *weights, int *tabu, int currentIndex, TSP *tsp)
+int Ant::fallback( float *weights, int *tabu, int currentIndex, TSP *tsp)
 {
 	float* vertX = tsp->vertX;
 	float* vertY = tsp->vertY;
@@ -69,8 +69,9 @@ void Ant::Init( AntSystem *as, int *seeds )
 	}
 
 	return nextPoint;
-}*/
+}
 
+/*
 int Ant::fallback( float *weights, int *tabu, int currentIndex, TSP *tsp)
 {
 	ALIGN(float indexSeed[8]) = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f};
@@ -127,7 +128,7 @@ int Ant::fallback( float *weights, int *tabu, int currentIndex, TSP *tsp)
 
 	return reduced;
 }
-
+*/
 
 #elif defined mapFB
 /*

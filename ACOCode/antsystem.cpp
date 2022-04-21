@@ -86,7 +86,7 @@ void AntSystem::Init( int nAnts, TSP *tsp, int seed )
 	}
 	m_shortestTour = (int*)ALLOC( (m_pTSP->numVerts * sizeof(int)) );
 
-	rho = 0.02f;
+	rho = 0.3f;
 
 	Clear();
 }
@@ -384,7 +384,7 @@ void AntSystem::Solve( int maxIterations, int maxStagnantIterations, bool contin
 	float shortestSoFar = 1e20f;
 	int sinceChange = 0;
 	int i;
-	bool stagnated = false;
+	stagnated = false;
 	timers->Clear();
 	iStagnation = -1; // sentinel value indicates no stagnation
 	
@@ -401,7 +401,7 @@ void AntSystem::Solve( int maxIterations, int maxStagnantIterations, bool contin
 			#ifdef mapFB
 			printf("\n%d %f %f %f %f %d", i, m_shortestDist, timers->GetTimer(1), timers->GetTimer(2), timers->GetTimer(0), weightMap.size());fflush(stdout);
 			#else
-			printf("\n%d %f %f %f %f %d", i, m_shortestDist, timers->GetTimer(1), timers->GetTimer(2), timers->GetTimer(0));fflush(stdout);
+			//printf("\n%d %f %f %f %f %d", i, m_shortestDist, timers->GetTimer(1), timers->GetTimer(2), timers->GetTimer(0));fflush(stdout);
 			#endif
 
 		}
@@ -411,18 +411,16 @@ void AntSystem::Solve( int maxIterations, int maxStagnantIterations, bool contin
 		{
 			shortestSoFar = m_shortestDist;
 			sinceChange = 0;
+			stagnated = false;
 		}
 		else
 			sinceChange++;
 		if ( !stagnated && (sinceChange >= maxStagnantIterations) )
 		{
 			iStagnation = i;
-			CalcStagnationMetrics();
-			stagnationEntropy = meanEntropy;
-			stagnationLambda = meanLambda;
-			stagnationTourLength = m_shortestDist;
 			stagnated = true;
 		}
+
 
 
 		

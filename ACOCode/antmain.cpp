@@ -9,7 +9,7 @@ int main( int argc, char *argv[] )
 #ifdef VTUNECAPTURE
 	__itt_pause(); // pause capture so we aren't picking up all the setup
 #endif
- if ( argc != 4 && argc != 5 && argc != 6 )
+ if ( argc != 4 && argc != 5 && argc != 6 && argc != 7)
     {
       fprintf(stderr,"parameters: problemfile, number of iterations, nNeighbours, number of ants, (seed)\n");
     }
@@ -27,6 +27,7 @@ int main( int argc, char *argv[] )
   
   int nIter;
   int nAnts;
+  int nStagnation;
   //determines the number of iterations
   sscanf( argv[2],"%d", &nIter );
 
@@ -42,13 +43,15 @@ int main( int argc, char *argv[] )
   if ( argc == 6 )
 	  sscanf( argv[5], "%d", &seed );
 
+  sscanf( argv[6],"%d", &nStagnation );
+
   as->Init( nAnts, tsp, seed );
   timers->StartTimer(0);
 #ifdef VTUNECAPTURE
   __itt_resume();
 #endif
 
-  as->Solve( nIter, nIter );
+  as->Solve( nIter, nStagnation , true);
   timers->StopTimer(0);
   printf("\nshortest tour: %f time %lf\n",as->GetShortestTourLength(),timers->GetTimer(0) );
 }

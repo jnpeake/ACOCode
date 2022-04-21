@@ -82,6 +82,26 @@ public:
 #endif
 	}
 
+	Vector operator/(const Vector& v) const
+	{
+		Vector vector;
+#ifdef SISD	
+		for (int i = 0; i < vectorSize; i++)
+		{
+			vector.values[i] = (this->values[i] / v.values[i]);
+		}
+
+		return vector;
+#elif defined AVX512
+		vector.AVXVec = _mm512_div_ps(this->AVXVec, v.AVXVec);
+		return vector;
+#elif (defined AVX || defined AVX2)
+		vector.AVXVec = _mm256_div_ps(this->AVXVec, v.AVXVec);
+		return vector;
+
+#endif
+	}
+
 	void vecMax(float maxVal)
 	{
 #ifdef SISD

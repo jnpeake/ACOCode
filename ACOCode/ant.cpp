@@ -44,8 +44,6 @@ void Ant::Init( AntSystem *as, int *seeds )
 }
 
 
-#ifdef defaultValFB
-
 int Ant::fallback( float *weights, int *tabu, int currentIndex, TSP *tsp)
 {
 	float* vertX = tsp->vertX;
@@ -71,144 +69,9 @@ int Ant::fallback( float *weights, int *tabu, int currentIndex, TSP *tsp)
 	return nextPoint;
 }
 
-/*
-int Ant::fallback( float *weights, int *tabu, int currentIndex, TSP *tsp)
-{
-	ALIGN(float indexSeed[8]) = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f};
-	ALIGN(float indexStep[8]) = { 8.0f, 8.0f, 8.0f, 8.0f, 8.0f, 8.0f, 8.0f, 8.0f};
-	ALIGN(float minusOnes[8]) = { -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f};
-
-	float *vertX = tsp->vertX;
-	float *vertY = tsp->vertY;
 
 
-	int currentX = vertX[currentIndex];
-	int currentY = vertY[currentIndex];
 
-	Vector minusOne;
-	minusOne.load(minusOnes);
-	Vector runningIndex;
-	runningIndex.load(indexSeed);
-	Vector delta16;
-	delta16.load( indexStep );
-	Vector curIndices = minusOne;
-	Vector curWeights = minusOne;
- 	Vector tabuMask = int2mask( tabu[0] );
-	Vector currentXVec;
-	Vector currentYVec;
-
-	currentXVec.set1(currentX);
-	currentYVec.set1(currentY);
-
-	for ( int i = 0; i < tsp->numVerts/_VECSIZE; i++ )
-	{
-		Vector nextX;
-		Vector nextY;
-		Vector nextWeights;
-
-		nextWeights.load(weights + i * _VECSIZE);
-		nextX.load(vertX + i * _VECSIZE);
-		nextY.load(vertY + i * _VECSIZE);
-
-		
-		
-		Vector nextIndices =  runningIndex;
-		Vector randoms = vecRandom(rC0,rC1,factor,rSeed);
-		//printVectorMM512Decimal(randoms);fflush(stdout);
-		//printVectorMM512Decimal(nextWeights);fflush(stdout);
-		nextWeights = nextWeights * randoms;
-		nextWeights = mask_mov( nextWeights, tabuMask, minusOne );
-
-		tabuMask = int2mask( tabu[i+1] );
-		maxLocStep( curWeights, curIndices, nextWeights, nextIndices );
-		runningIndex = runningIndex + delta16 ;
-	}
-	// now reduce the elements of curWeights
-	int reduced = reduceMax( curWeights, curIndices );
-
-	return reduced;
-}
-*/
-
-#elif defined mapFB
-/*
-int Ant::fallback(float *weights, int *tabu, int currentIndex, TSP *tsp)
-{
-	int highestIndex;
-	float highestWeight = 0.0f;
-	int positionA;
-	int positionB;
-	for(int i = 0; i < tsp->numVerts; i++ )
-	{
-		if(!((tabu[i/_VECSIZE] >> i % _VECSIZE) & 1))
-		{
-			if(i > currentIndex)
-			{
-				int tempCurr = currentIndex;
-				positionA = i;
-				positionB = tempCurr;	
-			}
-
-			else
-			{
-				positionB = i;
-				positionA = currentIndex;
-			}
-			timers->StartTimer(3);
-			float weight = (m_as->GetPheromoneValue(positionA,positionB, true)/(tsp->CalcEdgeDist(positionA,positionB)*tsp->CalcEdgeDist(positionA,positionB)));
-			timers->StopTimer(3);
-
-			if(weight > highestWeight)
-			{
-				highestWeight = weight;
-				highestIndex = i;
-			}
-		}
-	}
-
-	return highestIndex;
-
-}
-*/
-
-int Ant::fallback(float *weights, int *tabu, int currentIndex, TSP *tsp)
-{
-	int highestIndex;
-	float highestWeight = 0.0f;
-	int positionA;
-	int positionB;
-	for(int i = 0; i < tsp->numVerts; i++ )
-	{
-		if(!((tabu[i/_VECSIZE] >> i % _VECSIZE) & 1))
-		{
-			if(i > currentIndex)
-			{
-				int tempCurr = currentIndex;
-				positionA = i;
-				positionB = tempCurr;	
-			}
-
-			else
-			{
-				positionB = i;
-				positionA = currentIndex;
-			}
-			timers->StartTimer(3);
-			float weight = (m_as->GetPheromoneValue(positionA,positionB, true)/(tsp->CalcEdgeDist(positionA,positionB)*tsp->CalcEdgeDist(positionA,positionB)));
-			timers->StopTimer(3);
-
-			if(weight > highestWeight)
-			{
-				highestWeight = weight;
-				highestIndex = i;
-			}
-		}
-	}
-
-	return highestIndex;
-
-}
-#endif
 
 int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnList, int numNN)
 {
@@ -218,6 +81,7 @@ int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnL
 	ALIGN(float indexStep[_VECSIZE]) = { 8.0f, 8.0f, 8.0f, 8.0f, 8.0f, 8.0f, 8.0f, 8.0f};
 	ALIGN(float minusOnes[_VECSIZE]) = { -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f};
 	ALIGN(float nextIndicesArray[_VECSIZE]) = {0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f};
+	ALIGN(float ones[_VECSIZE]) = { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f};
 
 #elif defined AVX512
 	ALIGN(float indexSeed[_VECSIZE]) = { 0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 10.0f, 11.0f, 12.0f, 13.0f, 14.0f, 15.0f};
@@ -233,6 +97,8 @@ int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnL
 	delta16.load( indexStep );
 	Vector curIndices = minusOne;
 	Vector curWeights = minusOne;
+	Vector one;
+	one.load(ones);
 
 	for(int i = 0; i < numNN; i++)
 	{	
@@ -249,7 +115,12 @@ int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnL
 			//printf("\n i:%d, i*_VECSIZE: %d, numVerts: %d",i,i *_VECSIZE,nVerts);
 			nextWeights.load(weights + (i *_VECSIZE));
 			//nextWeights.maskLoad(minusOne, nnMask, weights + nnList[i].vectIndex *16);
-			nextWeights = nextWeights * randoms;
+
+			if(m_as->stagnated == false)
+				nextWeights = nextWeights * randoms;
+
+			else
+				nextWeights = (one-nextWeights) * randoms;
 			nextWeights = mask_mov(minusOne, nnMask, nextWeights);
 			nextWeights = mask_mov(nextWeights, tabuMask, minusOne);
 

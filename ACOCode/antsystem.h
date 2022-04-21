@@ -36,6 +36,7 @@ public:
 
 	// iteration count at which stagnation occured
 	int iStagnation;
+	bool stagnated;
 	// stagnation metrics at point of stagnation
 	float stagnationEntropy;
 	float stagnationLambda;

@@ -40,8 +40,8 @@ int main( int argc, char *argv[] )
   int seed = 12345;
 
   //determines seed, if specified
-  if ( argc == 6 )
-	  sscanf( argv[5], "%d", &seed );
+
+	sscanf( argv[5], "%d", &seed );
 
   sscanf( argv[6],"%d", &nStagnation );
 

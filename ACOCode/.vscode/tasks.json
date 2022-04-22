@@ -8,7 +8,7 @@
             "type": "shell",
             "command": "g++",
             "args": [
-                "vector.cpp", "ant.cpp", "antsystem.cpp", "antmain.cpp","localsearch.cpp", "-g", "-o", "antmain" ,"-std=c++11","-mavx2"
+                "vector.cpp", "ant.cpp", "antsystem.cpp", "antmain.cpp","localsearch.cpp", "-g", "-o", "antmain" ,"-std=c++11","-mavx2", "-fopenmp"
 
             ],
             "group": {

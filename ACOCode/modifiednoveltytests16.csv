@@ -1,0 +1,320 @@
+Seed: 45800 Stag: 10 TSP: pcb442.tsp
+shortest tour: 51319.000000 time 11.148594
+Seed: 45800 Stag: 10 TSP: rat783.tsp
+shortest tour: 9006.000000 time 21.104017
+Seed: 45800 Stag: 10 TSP: pr1002.tsp
+shortest tour: 264976.000000 time 26.817411
+Seed: 45800 Stag: 10 TSP: pr2392.tsp
+shortest tour: 388135.000000 time 78.107043
+Seed: 45800 Stag: 20 TSP: pcb442.tsp
+shortest tour: 51319.000000 time 10.476602
+Seed: 45800 Stag: 20 TSP: rat783.tsp
+shortest tour: 9006.000000 time 22.752040
+Seed: 45800 Stag: 20 TSP: pr1002.tsp
+shortest tour: 264976.000000 time 32.160828
+Seed: 45800 Stag: 20 TSP: pr2392.tsp
+shortest tour: 388135.000000 time 79.964128
+Seed: 45800 Stag: 30 TSP: pcb442.tsp
+shortest tour: 51319.000000 time 11.822342
+Seed: 45800 Stag: 30 TSP: rat783.tsp
+shortest tour: 9006.000000 time 25.783453
+Seed: 45800 Stag: 30 TSP: pr1002.tsp
+shortest tour: 264976.000000 time 32.446674
+Seed: 45800 Stag: 30 TSP: pr2392.tsp
+shortest tour: 388135.000000 time 77.968007
+Seed: 45800 Stag: 50 TSP: pcb442.tsp
+shortest tour: 51319.000000 time 12.725640
+Seed: 45800 Stag: 50 TSP: rat783.tsp
+shortest tour: 8978.000000 time 24.042380
+Seed: 45800 Stag: 50 TSP: pr1002.tsp
+shortest tour: 263470.000000 time 29.441373
+Seed: 45800 Stag: 50 TSP: pr2392.tsp
+shortest tour: 388135.000000 time 75.945314
+Seed: 45800 Stag: 100 TSP: pcb442.tsp
+shortest tour: 51319.000000 time 11.005088
+Seed: 45800 Stag: 100 TSP: rat783.tsp
+shortest tour: 8978.000000 time 23.912756
+Seed: 45800 Stag: 100 TSP: pr1002.tsp
+shortest tour: 263470.000000 time 28.824738
+Seed: 45800 Stag: 100 TSP: pr2392.tsp
+shortest tour: 388135.000000 time 73.814397
+Seed: 45800 Stag: 200 TSP: pcb442.tsp
+shortest tour: 51224.000000 time 10.901879
+Seed: 45800 Stag: 200 TSP: rat783.tsp
+shortest tour: 8978.000000 time 23.053987
+Seed: 45800 Stag: 200 TSP: pr1002.tsp
+shortest tour: 263470.000000 time 29.276292
+Seed: 45800 Stag: 200 TSP: pr2392.tsp
+shortest tour: 387558.000000 time 54.075456
+Seed: 45800 Stag: 500 TSP: pcb442.tsp
+shortest tour: 51224.000000 time 9.598856
+Seed: 45800 Stag: 500 TSP: rat783.tsp
+shortest tour: 8967.000000 time 21.576081
+Seed: 45800 Stag: 500 TSP: pr1002.tsp
+shortest tour: 262836.000000 time 24.394575
+Seed: 45800 Stag: 500 TSP: pr2392.tsp
+shortest tour: 387558.000000 time 54.217201
+Seed: 45800 Stag: 1000 TSP: pcb442.tsp
+shortest tour: 51224.000000 time 10.439837
+Seed: 45800 Stag: 1000 TSP: rat783.tsp
+shortest tour: 8967.000000 time 20.547883
+Seed: 45800 Stag: 1000 TSP: pr1002.tsp
+shortest tour: 262836.000000 time 24.463683
+Seed: 45800 Stag: 1000 TSP: pr2392.tsp
+shortest tour: 387558.000000 time 52.354752
+Seed: 49970 Stag: 10 TSP: pcb442.tsp
+shortest tour: 51319.000000 time 11.568128
+Seed: 49970 Stag: 10 TSP: rat783.tsp
+shortest tour: 8992.000000 time 25.241394
+Seed: 49970 Stag: 10 TSP: pr1002.tsp
+shortest tour: 264452.000000 time 32.520962
+Seed: 49970 Stag: 10 TSP: pr2392.tsp
+shortest tour: 388476.000000 time 79.555744
+Seed: 49970 Stag: 20 TSP: pcb442.tsp
+shortest tour: 51319.000000 time 11.377962
+Seed: 49970 Stag: 20 TSP: rat783.tsp
+shortest tour: 8992.000000 time 25.651296
+Seed: 49970 Stag: 20 TSP: pr1002.tsp
+shortest tour: 264452.000000 time 30.980837
+Seed: 49970 Stag: 20 TSP: pr2392.tsp
+shortest tour: 388476.000000 time 76.094104
+Seed: 49970 Stag: 30 TSP: pcb442.tsp
+shortest tour: 51315.000000 time 12.017604
+Seed: 49970 Stag: 30 TSP: rat783.tsp
+shortest tour: 8992.000000 time 24.260727
+Seed: 49970 Stag: 30 TSP: pr1002.tsp
+shortest tour: 264452.000000 time 31.493815
+Seed: 49970 Stag: 30 TSP: pr2392.tsp
+shortest tour: 388476.000000 time 74.629118
+Seed: 49970 Stag: 50 TSP: pcb442.tsp
+shortest tour: 51315.000000 time 11.579761
+Seed: 49970 Stag: 50 TSP: rat783.tsp
+shortest tour: 8970.000000 time 24.960656
+Seed: 49970 Stag: 50 TSP: pr1002.tsp
+shortest tour: 264452.000000 time 31.412893
+Seed: 49970 Stag: 50 TSP: pr2392.tsp
+shortest tour: 388476.000000 time 75.705258
+Seed: 49970 Stag: 100 TSP: pcb442.tsp
+shortest tour: 51290.000000 time 9.509080
+Seed: 49970 Stag: 100 TSP: rat783.tsp
+shortest tour: 8970.000000 time 23.495011
+Seed: 49970 Stag: 100 TSP: pr1002.tsp
+shortest tour: 264452.000000 time 30.766635
+Seed: 49970 Stag: 100 TSP: pr2392.tsp
+shortest tour: 387075.000000 time 66.019748
+Seed: 49970 Stag: 200 TSP: pcb442.tsp
+shortest tour: 51290.000000 time 10.970538
+Seed: 49970 Stag: 200 TSP: rat783.tsp
+shortest tour: 8970.000000 time 22.334745
+Seed: 49970 Stag: 200 TSP: pr1002.tsp
+shortest tour: 263362.000000 time 25.092278
+Seed: 49970 Stag: 200 TSP: pr2392.tsp
+shortest tour: 387075.000000 time 63.200693
+Seed: 49970 Stag: 500 TSP: pcb442.tsp
+shortest tour: 51231.000000 time 10.107307
+Seed: 49970 Stag: 500 TSP: rat783.tsp
+shortest tour: 8948.000000 time 21.598473
+Seed: 49970 Stag: 500 TSP: pr1002.tsp
+shortest tour: 263362.000000 time 25.098970
+Seed: 49970 Stag: 500 TSP: pr2392.tsp
+shortest tour: 387075.000000 time 53.477359
+Seed: 49970 Stag: 1000 TSP: pcb442.tsp
+shortest tour: 51231.000000 time 10.483663
+Seed: 49970 Stag: 1000 TSP: rat783.tsp
+shortest tour: 8948.000000 time 21.317205
+Seed: 49970 Stag: 1000 TSP: pr1002.tsp
+shortest tour: 263362.000000 time 24.069682
+Seed: 49970 Stag: 1000 TSP: pr2392.tsp
+shortest tour: 387075.000000 time 60.115972
+Seed: 5988 Stag: 10 TSP: pcb442.tsp
+shortest tour: 51278.000000 time 12.847488
+Seed: 5988 Stag: 10 TSP: rat783.tsp
+shortest tour: 9001.000000 time 28.510131
+Seed: 5988 Stag: 10 TSP: pr1002.tsp
+shortest tour: 264377.000000 time 33.993208
+Seed: 5988 Stag: 10 TSP: pr2392.tsp
+shortest tour: 388375.000000 time 83.316367
+Seed: 5988 Stag: 20 TSP: pcb442.tsp
+shortest tour: 51336.000000 time 12.405671
+Seed: 5988 Stag: 20 TSP: rat783.tsp
+shortest tour: 8996.000000 time 26.813422
+Seed: 5988 Stag: 20 TSP: pr1002.tsp
+shortest tour: 264377.000000 time 32.517730
+Seed: 5988 Stag: 20 TSP: pr2392.tsp
+shortest tour: 388375.000000 time 81.425648
+Seed: 5988 Stag: 30 TSP: pcb442.tsp
+shortest tour: 51336.000000 time 12.625106
+Seed: 5988 Stag: 30 TSP: rat783.tsp
+shortest tour: 8990.000000 time 25.885172
+Seed: 5988 Stag: 30 TSP: pr1002.tsp
+shortest tour: 264377.000000 time 32.630691
+Seed: 5988 Stag: 30 TSP: pr2392.tsp
+shortest tour: 388375.000000 time 79.470501
+Seed: 5988 Stag: 50 TSP: pcb442.tsp
+shortest tour: 51225.000000 time 13.106995
+Seed: 5988 Stag: 50 TSP: rat783.tsp
+shortest tour: 8941.000000 time 25.302522
+Seed: 5988 Stag: 50 TSP: pr1002.tsp
+shortest tour: 264329.000000 time 30.041345
+Seed: 5988 Stag: 50 TSP: pr2392.tsp
+shortest tour: 388375.000000 time 81.084684
+Seed: 5988 Stag: 100 TSP: pcb442.tsp
+shortest tour: 51225.000000 time 11.627493
+Seed: 5988 Stag: 100 TSP: rat783.tsp
+shortest tour: 8941.000000 time 25.691627
+Seed: 5988 Stag: 100 TSP: pr1002.tsp
+shortest tour: 263734.000000 time 27.577679
+Seed: 5988 Stag: 100 TSP: pr2392.tsp
+shortest tour: 387179.000000 time 68.470522
+Seed: 5988 Stag: 200 TSP: pcb442.tsp
+shortest tour: 51225.000000 time 10.407483
+Seed: 5988 Stag: 200 TSP: rat783.tsp
+shortest tour: 8941.000000 time 22.705557
+Seed: 5988 Stag: 200 TSP: pr1002.tsp
+shortest tour: 263262.000000 time 25.395789
+Seed: 5988 Stag: 200 TSP: pr2392.tsp
+shortest tour: 386806.000000 time 59.726323
+Seed: 5988 Stag: 500 TSP: pcb442.tsp
+shortest tour: 51124.000000 time 9.827161
+Seed: 5988 Stag: 500 TSP: rat783.tsp
+shortest tour: 8941.000000 time 21.310232
+Seed: 5988 Stag: 500 TSP: pr1002.tsp
+shortest tour: 263262.000000 time 24.961900
+Seed: 5988 Stag: 500 TSP: pr2392.tsp
+shortest tour: 386806.000000 time 53.024186
+Seed: 5988 Stag: 1000 TSP: pcb442.tsp
+shortest tour: 51124.000000 time 8.200618
+Seed: 5988 Stag: 1000 TSP: rat783.tsp
+shortest tour: 8941.000000 time 20.319749
+Seed: 5988 Stag: 1000 TSP: pr1002.tsp
+shortest tour: 263262.000000 time 25.371070
+Seed: 5988 Stag: 1000 TSP: pr2392.tsp
+shortest tour: 386806.000000 time 53.310146
+Seed: 48918 Stag: 10 TSP: pcb442.tsp
+shortest tour: 51376.000000 time 10.356970
+Seed: 48918 Stag: 10 TSP: rat783.tsp
+shortest tour: 8995.000000 time 23.912001
+Seed: 48918 Stag: 10 TSP: pr1002.tsp
+shortest tour: 263992.000000 time 31.824629
+Seed: 48918 Stag: 10 TSP: pr2392.tsp
+shortest tour: 392154.000000 time 77.911165
+Seed: 48918 Stag: 20 TSP: pcb442.tsp
+shortest tour: 51376.000000 time 11.309961
+Seed: 48918 Stag: 20 TSP: rat783.tsp
+shortest tour: 8995.000000 time 24.779485
+Seed: 48918 Stag: 20 TSP: pr1002.tsp
+shortest tour: 263992.000000 time 30.403867
+Seed: 48918 Stag: 20 TSP: pr2392.tsp
+shortest tour: 389441.000000 time 76.380852
+Seed: 48918 Stag: 30 TSP: pcb442.tsp
+shortest tour: 51188.000000 time 11.221493
+Seed: 48918 Stag: 30 TSP: rat783.tsp
+shortest tour: 8995.000000 time 24.423503
+Seed: 48918 Stag: 30 TSP: pr1002.tsp
+shortest tour: 263992.000000 time 31.259786
+Seed: 48918 Stag: 30 TSP: pr2392.tsp
+shortest tour: 389441.000000 time 78.761352
+Seed: 48918 Stag: 50 TSP: pcb442.tsp
+shortest tour: 51188.000000 time 12.324074
+Seed: 48918 Stag: 50 TSP: rat783.tsp
+shortest tour: 8995.000000 time 26.165314
+Seed: 48918 Stag: 50 TSP: pr1002.tsp
+shortest tour: 263992.000000 time 32.444138
+Seed: 48918 Stag: 50 TSP: pr2392.tsp
+shortest tour: 388429.000000 time 73.603897
+Seed: 48918 Stag: 100 TSP: pcb442.tsp
+shortest tour: 51188.000000 time 12.166752
+Seed: 48918 Stag: 100 TSP: rat783.tsp
+shortest tour: 8971.000000 time 24.191405
+Seed: 48918 Stag: 100 TSP: pr1002.tsp
+shortest tour: 263992.000000 time 31.222852
+Seed: 48918 Stag: 100 TSP: pr2392.tsp
+shortest tour: 388429.000000 time 70.487652
+Seed: 48918 Stag: 200 TSP: pcb442.tsp
+shortest tour: 51188.000000 time 11.498001
+Seed: 48918 Stag: 200 TSP: rat783.tsp
+shortest tour: 8971.000000 time 21.902257
+Seed: 48918 Stag: 200 TSP: pr1002.tsp
+shortest tour: 263702.000000 time 28.134984
+Seed: 48918 Stag: 200 TSP: pr2392.tsp
+shortest tour: 387050.000000 time 62.853146
+Seed: 48918 Stag: 500 TSP: pcb442.tsp
+shortest tour: 51188.000000 time 11.039699
+Seed: 48918 Stag: 500 TSP: rat783.tsp
+shortest tour: 8971.000000 time 22.818468
+Seed: 48918 Stag: 500 TSP: pr1002.tsp
+shortest tour: 263702.000000 time 24.386562
+Seed: 48918 Stag: 500 TSP: pr2392.tsp
+shortest tour: 387050.000000 time 57.734498
+Seed: 48918 Stag: 1000 TSP: pcb442.tsp
+shortest tour: 51188.000000 time 11.275883
+Seed: 48918 Stag: 1000 TSP: rat783.tsp
+shortest tour: 8971.000000 time 22.168732
+Seed: 48918 Stag: 1000 TSP: pr1002.tsp
+shortest tour: 263702.000000 time 25.604053
+Seed: 48918 Stag: 1000 TSP: pr2392.tsp
+shortest tour: 387050.000000 time 55.204806
+Seed: 33113 Stag: 10 TSP: pcb442.tsp
+shortest tour: 51209.000000 time 12.839730
+Seed: 33113 Stag: 10 TSP: rat783.tsp
+shortest tour: 9012.000000 time 26.508563
+Seed: 33113 Stag: 10 TSP: pr1002.tsp
+shortest tour: 264383.000000 time 33.612783
+Seed: 33113 Stag: 10 TSP: pr2392.tsp
+shortest tour: 390213.000000 time 83.332079
+Seed: 33113 Stag: 20 TSP: pcb442.tsp
+shortest tour: 51285.000000 time 10.647495
+Seed: 33113 Stag: 20 TSP: rat783.tsp
+shortest tour: 8988.000000 time 24.727984
+Seed: 33113 Stag: 20 TSP: pr1002.tsp
+shortest tour: 264383.000000 time 34.088576
+Seed: 33113 Stag: 20 TSP: pr2392.tsp
+shortest tour: 387936.000000 time 81.109238
+Seed: 33113 Stag: 30 TSP: pcb442.tsp
+shortest tour: 51181.000000 time 11.288013
+Seed: 33113 Stag: 30 TSP: rat783.tsp
+shortest tour: 8988.000000 time 25.918447
+Seed: 33113 Stag: 30 TSP: pr1002.tsp
+shortest tour: 264383.000000 time 31.000908
+Seed: 33113 Stag: 30 TSP: pr2392.tsp
+shortest tour: 387936.000000 time 81.512887
+Seed: 33113 Stag: 50 TSP: pcb442.tsp
+shortest tour: 51181.000000 time 12.775070
+Seed: 33113 Stag: 50 TSP: rat783.tsp
+shortest tour: 8945.000000 time 25.520337
+Seed: 33113 Stag: 50 TSP: pr1002.tsp
+shortest tour: 263530.000000 time 29.509994
+Seed: 33113 Stag: 50 TSP: pr2392.tsp
+shortest tour: 387266.000000 time 75.539920
+Seed: 33113 Stag: 100 TSP: pcb442.tsp
+shortest tour: 51181.000000 time 11.873661
+Seed: 33113 Stag: 100 TSP: rat783.tsp
+shortest tour: 8945.000000 time 24.776548
+Seed: 33113 Stag: 100 TSP: pr1002.tsp
+shortest tour: 263530.000000 time 30.097259
+Seed: 33113 Stag: 100 TSP: pr2392.tsp
+shortest tour: 387266.000000 time 75.830162
+Seed: 33113 Stag: 200 TSP: pcb442.tsp
+shortest tour: 51181.000000 time 11.520563
+Seed: 33113 Stag: 200 TSP: rat783.tsp
+shortest tour: 8945.000000 time 23.179999
+Seed: 33113 Stag: 200 TSP: pr1002.tsp
+shortest tour: 263530.000000 time 29.386033
+Seed: 33113 Stag: 200 TSP: pr2392.tsp
+shortest tour: 387266.000000 time 65.883922
+Seed: 33113 Stag: 500 TSP: pcb442.tsp
+shortest tour: 51181.000000 time 10.148741
+Seed: 33113 Stag: 500 TSP: rat783.tsp
+shortest tour: 8945.000000 time 21.286015
+Seed: 33113 Stag: 500 TSP: pr1002.tsp
+shortest tour: 262837.000000 time 25.328484
+Seed: 33113 Stag: 500 TSP: pr2392.tsp
+shortest tour: 387266.000000 time 56.359650
+Seed: 33113 Stag: 1000 TSP: pcb442.tsp
+shortest tour: 51181.000000 time 9.664556
+Seed: 33113 Stag: 1000 TSP: rat783.tsp
+shortest tour: 8945.000000 time 21.669672
+Seed: 33113 Stag: 1000 TSP: pr1002.tsp
+shortest tour: 262837.000000 time 26.189748
+Seed: 33113 Stag: 1000 TSP: pr2392.tsp
+shortest tour: 387266.000000 time 49.596309

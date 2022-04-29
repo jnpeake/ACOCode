@@ -152,7 +152,7 @@ void seedVecRandom(Vector& rC0, Vector& rC1, Vector& factor, int *seeds, Vector&
 #elif (defined AVX || defined AVX2)
 	int c0 = 1664525L;
 	int c1 = 1013904223L;
-	float factors[16] __attribute__ ((aligned (32))) = { 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f,2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f };
+	ALIGN(float factors[16]) = { 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f,2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f, 2.3283064e-10f };
 
 	rSeed.AVXIntVec = _mm256_load_si256((__m256i*)seeds);
 	rC0.AVXIntVec = _mm256_set1_epi32(c0); //m512i
@@ -301,7 +301,7 @@ int reduceMax(Vector &curWeights, Vector &curIndices) // SIGNIFICANTLY DIFFERENT
 	__m256 permVal;
 	__m256 permInd;
 	__m256 maxMask;
-	float result[8] __attribute__ ((aligned (32)));
+	ALIGN(float result[8]);
 	permVal = _mm256_permute_ps(curWeights.AVXVec, _MM_SHUFFLE(2,3,0,1)); //01001110
 	permInd = _mm256_permute_ps(curIndices.AVXVec, _MM_SHUFFLE(2, 3, 0, 1)); //01001110
 	maxMask = _mm256_cmp_ps(curWeights.AVXVec, permVal, _CMP_GT_OS);

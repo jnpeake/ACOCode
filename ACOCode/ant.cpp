@@ -116,6 +116,9 @@ int Ant::csRoulette(float *weights, int *tabu, int nVerts, nearestNeighbour *nnL
 			nextWeights.load(weights + (i *_VECSIZE));
 			//nextWeights.maskLoad(minusOne, nnMask, weights + nnList[i].vectIndex *16);
 
+			/*if(m_as->stagnated == false)
+				nextWeights = nextWeights * randoms;*/
+
 			if(m_as->stagnated == false)
 				nextWeights = nextWeights * randoms;
 

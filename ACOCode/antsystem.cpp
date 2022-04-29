@@ -126,7 +126,9 @@ void AntSystem::Clear( void )
 			//inverse square of edge distances
 			m_iDistSq[i][j] = 1.0f/(m_pTSP->edgeDist[i][j]*m_pTSP->edgeDist[i][j]);
 			//pheromone / edgeDist^2
-			m_weights[i][j] = (GetPheromoneValue(i,j, false)/(m_pTSP->edgeDist[i][j]*m_pTSP->edgeDist[i][j]));
+			float pherVal = GetPheromoneValue(i,j, false);
+			float edgeDist = m_pTSP->edgeDist[i][j];
+			m_weights[i][j] = (pherVal)/(edgeDist*edgeDist*edgeDist*edgeDist);
 			//printf("\n%f",m_weights[i][j]);
 			
 			//printf("%d, %d: %f | %f | %f \n",i,j,m_weights[i][j], GetPheromoneValue(i,j, false), m_pTSP->edgeDist[i][j]);
@@ -491,6 +493,11 @@ void AntSystem::SetPheromoneValue(int pointA, int pointB, float deltaPher, bool 
 	int bPosition;
 	int** nnList = m_pTSP->nnList;
 	int _numNN = m_pTSP->numNN;
+
+	if(stagnated)
+	{
+		deltaPher *= 10;
+	}
 	
 
 	if(afterTour == true)

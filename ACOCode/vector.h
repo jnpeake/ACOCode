@@ -118,7 +118,7 @@ public:
 		__m512 maxValVec = _mm512_load_ps(maxValAr);
 		this->AVXVec = _mm512_min_ps(this->AVXVec, maxValVec);
 #elif (defined AVX || defined AVX2)
-		float maxValAr[8] __attribute__ ((aligned (32))) = { maxVal,maxVal,maxVal,maxVal,maxVal,maxVal,maxVal,maxVal};
+		ALIGN(float maxValAr[8]) = { maxVal,maxVal,maxVal,maxVal,maxVal,maxVal,maxVal,maxVal};
 		__m256 maxValVec = _mm256_load_ps(maxValAr);
 		this->AVXVec = _mm256_min_ps(this->AVXVec, maxValVec);
 #endif
@@ -141,7 +141,7 @@ public:
 		__m512 minValVec = _mm512_load_ps(minValAr);
 		this->AVXVec = _mm512_max_ps(this->AVXVec, minValVec);
 #elif (defined AVX || defined AVX2)
-		float minValAr[8] __attribute__ ((aligned (32))) = { minVal,minVal,minVal,minVal,minVal,minVal,minVal,minVal};
+		ALIGN(float minValAr[8]) = { minVal,minVal,minVal,minVal,minVal,minVal,minVal,minVal};
 		__m256 minValVec = _mm256_load_ps(minValAr);
 		this->AVXVec = _mm256_max_ps(this->AVXVec, minValVec);
 #endif
